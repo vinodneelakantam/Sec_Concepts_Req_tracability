@@ -26,9 +26,25 @@ graph LR
 ```
 
 ### 1.3 System-level requirement allocation
-- CSR-COM-1 to CSR-COM-5
-- FCR-COM-1 to FCR-COM-4
-- TCR-COM-1 to TCR-COM-4
+
+**Cybersecurity Requirements (CSR)**
+- CSR-COM-1: Critical messages shall include source authentication and integrity protection.
+- CSR-COM-2: Sensitive payloads shall use confidentiality-protected channels.
+- CSR-COM-3: Freshness/anti-replay checks shall be enforced on protected flows.
+- CSR-COM-4: Invalid security metadata shall result in fail-closed behavior for critical paths.
+- CSR-COM-5: Key lifecycle controls shall support rotation/revocation without policy gaps.
+
+**Functional Cybersecurity Concept (FCR)**
+- FCR-COM-1: Apply protocol-appropriate protection profile per channel.
+- FCR-COM-2: Enforce receiver-side verification before handing data to application logic.
+- FCR-COM-3: Centralize key provisioning, rotation, and revocation policy.
+- FCR-COM-4: Provide security violation telemetry for operations and forensics.
+
+**Technical Cybersecurity Concept (TCR)**
+- TCR-COM-1: Use SA2UL-assisted crypto for MAC/signature/encryption operations.
+- TCR-COM-2: Bind trust decisions to lifecycle state and key state policy.
+- TCR-COM-3: Implement synchronized freshness counters/nonces across peers.
+- TCR-COM-4: Integrate drop/deny outcomes with secure logging.
 
 ## 2. Hardware Static Architecture
 

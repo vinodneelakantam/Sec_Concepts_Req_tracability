@@ -25,9 +25,25 @@ graph LR
 ```
 
 ### 1.3 System-level requirement allocation
-- CSR-SA-1 to CSR-SA-5
-- FCR-SA-1 to FCR-SA-4
-- TCR-SA-1 to TCR-SA-4
+
+**Cybersecurity Requirements (CSR)**
+- CSR-SA-1: Protected services shall require successful security access before execution.
+- CSR-SA-2: Challenge-response shall include freshness/nonce and anti-replay protection.
+- CSR-SA-3: Failed attempts shall trigger lockout/backoff and audit logging.
+- CSR-SA-4: Access rights shall be role/session specific.
+- CSR-SA-5: Elevated access shall expire automatically and require re-authentication.
+
+**Functional Cybersecurity Concept (FCR)**
+- FCR-SA-1: Separate authentication (identity proof) from authorization (service scope).
+- FCR-SA-2: Enforce deny-by-default for protected services when access state is invalid.
+- FCR-SA-3: Invalidate access state on timeout, reset, and session downgrade.
+- FCR-SA-4: Apply graded delay/lockout policy for brute-force resistance.
+
+**Technical Cybersecurity Concept (TCR)**
+- TCR-SA-1: Implement challenge-response using hardware-assisted crypto (SA2UL where applicable).
+- TCR-SA-2: Keep long-term secrets in secure storage/provisioning flow and prevent plaintext export.
+- TCR-SA-3: Bind decisions to lifecycle state and policy configuration.
+- TCR-SA-4: Emit security events to protected logging path for forensic continuity.
 
 ## 2. Hardware Static Architecture
 

@@ -26,9 +26,25 @@ graph LR
 ```
 
 ### 1.3 System-level requirement allocation
-- CSR-SRP-1 to CSR-SRP-5
-- FCR-SRP-1 to FCR-SRP-4
-- TCR-SRP-1 to TCR-SRP-4
+
+**Cybersecurity Requirements (CSR)**
+- CSR-SRP-1: Downloaded images shall be authenticated and integrity-checked prior to activation.
+- CSR-SRP-2: Anti-rollback policy shall reject vulnerable older versions.
+- CSR-SRP-3: Interruption during flashing shall not create undefined executable state.
+- CSR-SRP-4: Activation reset shall pass through the standard secure boot chain.
+- CSR-SRP-5: Update metadata shall include compatibility/dependency policy inputs.
+
+**Functional Cybersecurity Concept (FCR)**
+- FCR-SRP-1: Use staged workflow (download, verify, commit, activate).
+- FCR-SRP-2: Keep active and candidate images separable with explicit commit decision.
+- FCR-SRP-3: Maintain rollback-safe recovery to last known-good executable image.
+- FCR-SRP-4: Refuse activation if verification or policy checks fail.
+
+**Technical Cybersecurity Concept (TCR)**
+- TCR-SRP-1: Perform signature/hash checks using SA2UL-assisted cryptography.
+- TCR-SRP-2: Enforce SWREV/equivalent monotonic version policy in trust chain.
+- TCR-SRP-3: Activation shall re-run the DMSC BootROM -> System Firmware/TIFS -> R5F SBL -> application verification sequence.
+- TCR-SRP-4: Log update state transitions and security failures using secure logging path.
 
 ## 2. Hardware Static Architecture
 

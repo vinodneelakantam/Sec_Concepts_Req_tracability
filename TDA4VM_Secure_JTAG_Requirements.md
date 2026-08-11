@@ -32,9 +32,25 @@ graph LR
 ```
 
 ### 1.3 System-level requirement allocation
-- CSR-JTAG-1 to CSR-JTAG-5
-- FCR-JTAG-1 to FCR-JTAG-4
-- TCR-JTAG-1 to TCR-JTAG-4
+
+**Cybersecurity Requirements (CSR)**
+- CSR-JTAG-1: Debug unlock shall require cryptographic authorization, not static passwords.
+- CSR-JTAG-2: Production lifecycle state shall keep JTAG closed by default per device security type - HS-SE closes all cores by default; HS-FS closes only the M3/DMSC core by default and relies on OEM board configuration/provisioning to lock the remaining cores.
+- CSR-JTAG-3: Debug unlock attempts and debug state transitions shall be logged with integrity protection.
+- CSR-JTAG-4: Debug privileges shall be bounded by explicit per-certificate core scope and privilege level.
+- CSR-JTAG-5: Debug certificates shall enforce a minimum certificate revision (`min_cert_rev`) to prevent replay of older unlock certificates.
+
+**Functional Cybersecurity Concept (FCR)**
+- FCR-JTAG-1: Enforce closed-by-default debug posture per device security type in production (see HS-FS/HS-SE table in Section 2.2).
+- FCR-JTAG-2: Separate certificate signature/UID validation (authentication) from the encoded debug privilege level and core scope (authorization).
+- FCR-JTAG-3: Apply least-privilege debug profiles by encoding only the required cores/privilege level (`coreDbgEn`, `coreDbgSecEn`, `debugType`) per certificate.
+- FCR-JTAG-4: Prohibit wildcard UID unlock (`allow_wildcard_unlock`) with production signing keys; permit it only for lab/development use.
+
+**Technical Cybersecurity Concept (TCR)** - corrected against TI TISCI Secure Debug User Guide
+- TCR-JTAG-1: Use the device security type (GP/HS-FS/HS-SE) and System Firmware (TIFS) certificate validation to govern debug access, not a generic "lifecycle policy".
+- TCR-JTAG-2: Keep debug-unlock signing keys (SMPK/BMPK) in the OEM's offline root-of-trust key management, never in application plaintext.
+- TCR-JTAG-3: Route unlock events, validation failures, and `TISCI_MSG_DISABLE_JTAG_UNLOCK` permanent-lockout actions into secure logging.
+- TCR-JTAG-4: The M3/DMSC JTAG path can never be opened by software on HS-FS or HS-SE devices, regardless of reset path.
 
 ## 2. Hardware Static Architecture
 

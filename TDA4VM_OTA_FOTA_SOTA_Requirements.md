@@ -26,9 +26,25 @@ graph LR
 ```
 
 ### 1.3 System-level requirement allocation
-- CSR-OTA-1 to CSR-OTA-5
-- FCR-OTA-1 to FCR-OTA-4
-- TCR-OTA-1 to TCR-OTA-4
+
+**Cybersecurity Requirements (CSR)**
+- CSR-OTA-1: Update artifacts shall be signed and campaign-authorized.
+- CSR-OTA-2: Transport shall provide endpoint authentication, confidentiality, and integrity.
+- CSR-OTA-3: ECU shall verify artifact authenticity and compatibility before installation.
+- CSR-OTA-4: Resume/retry logic shall preserve end-to-end integrity guarantees.
+- CSR-OTA-5: Update outcomes shall be auditable and reportable.
+
+**Functional Cybersecurity Concept (FCR)**
+- FCR-OTA-1: Enforce both secure channel validation and package signature validation.
+- FCR-OTA-2: Apply manifest-based policy checks (target identity, dependencies, version bounds).
+- FCR-OTA-3: Integrate OTA client with rollback-safe secure reprogramming process.
+- FCR-OTA-4: Use resumable chunk transfer with chunk integrity checks.
+
+**Technical Cybersecurity Concept (TCR)**
+- TCR-OTA-1: Use TLS with device credentials and approved cipher/policy profile.
+- TCR-OTA-2: Verify package signature before handoff to installer.
+- TCR-OTA-3: Activation path shall converge to secure boot + anti-rollback checks.
+- TCR-OTA-4: Record campaign/install state changes in secure logging.
 
 ## 2. Hardware Static Architecture
 

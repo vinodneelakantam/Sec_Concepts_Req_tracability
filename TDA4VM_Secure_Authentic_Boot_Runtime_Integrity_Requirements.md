@@ -33,9 +33,28 @@ graph LR
 ```
 
 ### 1.3 System-level requirement allocation
-- CSR-1 to CSR-6
-- FCR-1 to FCR-5
-- TCR-1 to TCR-5
+
+**Cybersecurity Requirements (CSR)**
+- CSR-1: Verify integrity and authenticity of every boot-stage image before executing it.
+- CSR-2: Detect tampering of running code/critical data after boot has already completed.
+- CSR-3: Anchor verification in an immutable hardware root of trust, not a software-only check.
+- CSR-4: Perform boot verification on every power-on/reset, independent of any prior flashing session.
+- CSR-5: Gate post-reprogramming activation on the same trust chain used for ordinary power-on.
+- CSR-6: Cover runtime integrity monitoring across power-on, post-reprogramming, and other operational scenarios.
+
+**Functional Cybersecurity Concept (FCR)**
+- FCR-1: Each boot stage cryptographically verifies the next stage before it executes (chain of trust).
+- FCR-2: Boot failures halt/fall back (secure boot) or are measured and logged for deferred judgment (authentic boot) - the strategy is a deliberate choice, not interchangeable defaults.
+- FCR-3: An immutable, hardware-anchored first-stage verifier initiates the entire chain.
+- FCR-4: Runtime monitoring re-validates code integrity independent of and after boot-time checks.
+- FCR-5: Post-flash activation reuses the same chain-of-trust verification as normal boot, not a shortcut.
+
+**Technical Cybersecurity Concept (TCR)** - corrected against TI TISCI documentation
+- TCR-1: The DMSC immutable BootROM authenticates the System Firmware/TIFS image via X.509 certificate (RSA-4K signature, SHA2-512 hash) and halts/recovers on failure.
+- TCR-2: System Firmware (TIFS) authenticates the R5F SBL and A72 application images before releasing each core, via `TISCI_MSG_PROC_AUTH_BOOT`.
+- TCR-3: The eFuse SWREV monotonic counter is checked as part of certificate validation at every stage of this same chain, not only at flashing time.
+- TCR-4: Runtime integrity re-checking is built from SA2UL hashing plus protected NvM reference storage (architectural pattern consistent with TI's documented SA2UL/TISCI crypto services, not a separately named TI feature).
+- TCR-5: Reprogramming's post-flash activation reset re-runs the identical DMSC BootROM -> System Firmware/TIFS -> R5F SBL chain - no separate path.
 
 ## 2. Hardware Static Architecture
 

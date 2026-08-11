@@ -26,9 +26,25 @@ graph LR
 ```
 
 ### 1.3 System-level requirement allocation
-- CSR-RTMD-1 to CSR-RTMD-5
-- FCR-RTMD-1 to FCR-RTMD-4
-- TCR-RTMD-1 to TCR-RTMD-4
+
+**Cybersecurity Requirements (CSR)**
+- CSR-RTMD-1: Selected code/data/control indicators shall be monitored during runtime.
+- CSR-RTMD-2: Detection events shall trigger graded response actions by severity/confidence.
+- CSR-RTMD-3: Evidence for detections and actions shall be preserved for post-incident analysis.
+- CSR-RTMD-4: Monitoring shall combine periodic checks and event-triggered checks.
+- CSR-RTMD-5: Response actions shall be coordinated with safety management logic.
+
+**Functional Cybersecurity Concept (FCR)**
+- FCR-RTMD-1: Combine periodic integrity checks with trigger-based checks (reset anomalies, debug-state changes, repeated auth anomalies).
+- FCR-RTMD-2: Apply deterministic policy mapping from detection class to response tier.
+- FCR-RTMD-3: Coordinate security reactions with safety state manager to avoid unsafe abrupt transitions.
+- FCR-RTMD-4: Keep forensic continuity from detection through mitigation.
+
+**Technical Cybersecurity Concept (TCR)**
+- TCR-RTMD-1: Use SA2UL-assisted hashing for runtime integrity computation.
+- TCR-RTMD-2: Compare against protected reference values from secure storage/NvM design.
+- TCR-RTMD-3: Integrate outcomes with DEM/EcuM response logic and secure logging path.
+- TCR-RTMD-4: Correlate watchdog/reset/status context for diagnosis and controlled recovery.
 
 ## 2. Hardware Static Architecture
 

@@ -25,9 +25,25 @@ graph LR
 ```
 
 ### 1.3 System-level requirement allocation
-- CSR-LOG-1 to CSR-LOG-5
-- FCR-LOG-1 to FCR-LOG-4
-- TCR-LOG-1 to TCR-LOG-4
+
+**Cybersecurity Requirements (CSR)**
+- CSR-LOG-1: Security-relevant events shall be logged with integrity protection.
+- CSR-LOG-2: Retention/rotation shall preserve high-criticality events and prevent silent loss.
+- CSR-LOG-3: Sensitive data fields shall be minimized or protected according to privacy policy.
+- CSR-LOG-4: Time/counter context shall support event sequencing and cross-source correlation.
+- CSR-LOG-5: Exported logs shall maintain provenance and integrity metadata.
+
+**Functional Cybersecurity Concept (FCR)**
+- FCR-LOG-1: Use tamper-evident record chaining or signed batches.
+- FCR-LOG-2: Define severity classes with differentiated retention and upload behavior.
+- FCR-LOG-3: Collect events from boot, diagnostics, reprogramming, comm security, and runtime monitoring.
+- FCR-LOG-4: Ensure logging failure modes do not silently suppress critical events.
+
+**Technical Cybersecurity Concept (TCR)**
+- TCR-LOG-1: Use SA2UL-backed MAC/signature primitives for integrity tagging.
+- TCR-LOG-2: Store critical logs in protected NvM partition with crash-consistent writes.
+- TCR-LOG-3: Support authenticated upload to backend/SOC with chain continuity markers.
+- TCR-LOG-4: Enforce local privacy redaction/masking policy before export.
 
 ## 2. Hardware Static Architecture
 
