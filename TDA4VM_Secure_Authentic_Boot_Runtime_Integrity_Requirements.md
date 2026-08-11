@@ -71,12 +71,12 @@ graph LR
 - JTAG/Sec-AP debug interface, gated by device security configuration (GP / HS-FS / HS-SE)
 
 ### 2.2 Hardware responsibility mapping
-- DMSC BootROM is the immutable root of trust that starts every boot (CSR-3, FCR-3, TCR-1)
-- eFuse-held SMPK/BMPK key hash anchors all signature verification; KEYREV selects which of the
-  two customer keys is active (TCR-1, TCR-2)
-- eFuse SWREV enforces monotonic anti-rollback policy, checked by System Firmware as part of
+- HWR-1: DMSC BootROM is the immutable root of trust that starts every boot (CSR-3, FCR-3, TCR-1)
+- HWR-2: eFuse-held SMPK/BMPK key hash anchors all signature verification; KEYREV selects which of
+  the two customer keys is active (TCR-1, TCR-2)
+- HWR-3: eFuse SWREV enforces monotonic anti-rollback policy, checked by System Firmware as part of
   certificate validation (TCR-3)
-- SA2UL performs the SHA-2/RSA operations used for both boot-time authentication and runtime
+- HWR-4: SA2UL performs the SHA-2/RSA operations used for both boot-time authentication and runtime
   integrity hashing (TCR-4)
 
 ## 3. Software Static Architecture
@@ -101,11 +101,11 @@ graph LR
 ```
 
 ### 3.2 Software requirement allocation
-- Each stage is authenticated before release using an X.509 certificate carrying an
+- SWR-1: Each stage is authenticated before release using an X.509 certificate carrying an
   RSA-4K signature (RSASSA-PKCS1-v1_5) over a SHA2-512 payload hash, verified by System Firmware
   against the eFuse SMPK/BMPK key hash (FCR-1, TCR-1, TCR-2)
-- Runtime re-checking is independent of boot-time verification and re-uses SA2UL hashing (FCR-4)
-- Post-flash activation reuses the identical DMSC BootROM -> SYSFW -> SBL -> Application
+- SWR-2: Runtime re-checking is independent of boot-time verification and re-uses SA2UL hashing (FCR-4)
+- SWR-3: Post-flash activation reuses the identical DMSC BootROM -> SYSFW -> SBL -> Application
   authentication sequence; there is no separate/shortcut activation path (CSR-5, TCR-5)
 
 ## 4. Dynamic / Behavioral Views
@@ -119,18 +119,35 @@ sequenceDiagram
   participant SBL as R5F SBL
   participant APP as A72 Application
   participant MON as Runtime Monitor
+  participant SAFE as Safety Manager
   participant LOG as Secure Logging
 
-  ROM->>ROM: Verify SYSFW/TIFS X.509 cert (RSA-4K sig, SHA2-512 hash) vs eFuse key hash
-  ROM->>SF: Release System Firmware on match
-  SF->>SBL: TISCI_MSG_PROC_AUTH_BOOT - verify cert + SWREV, release R5F core
-  SBL->>APP: TISCI_MSG_PROC_AUTH_BOOT - verify cert + SWREV, release A72 core
-  APP->>MON: Start runtime integrity monitoring
-  loop Periodic/Event-triggered
-    MON->>MON: Recompute hash via SA2UL, compare to reference
-    alt Violation
-      MON->>LOG: Log tamper evidence
-      MON->>APP: Trigger policy response (degrade/reset)
+  ROM->>ROM: Verify SYSFW/TIFS X.509 cert (RSA-4K sig, SHA2-512 hash) vs eFuse SMPK/BMPK hash
+  alt Certificate invalid or KEYREV mismatch
+    ROM->>ROM: Halt - no software released, failure only observable via boot-fail status/error pin
+  else Certificate valid
+    ROM->>SF: Release System Firmware (DMSC now running)
+    SF->>SF: TISCI_MSG_PROC_AUTH_BOOT request for R5F SBL - verify cert + eFuse SWREV
+    alt SBL cert invalid or SWREV stale
+      SF->>LOG: Log SBL authentication failure (first stage capable of logging)
+      SF->>SF: Halt R5F release, remain in failure-safe state
+    else SBL cert valid
+      SF->>SBL: Release R5F SBL core
+      SBL->>SF: TISCI_MSG_PROC_AUTH_BOOT request for A72 application - verify cert + eFuse SWREV
+      alt Application cert invalid or SWREV stale
+        SF->>LOG: Log application authentication failure
+        SF->>SBL: Halt A72 release, remain in known-good SBL-only state
+      else Application cert valid
+        SF->>APP: Release A72 application core
+        APP->>MON: Start runtime integrity monitoring
+        loop Periodic/Event-triggered
+          MON->>MON: Recompute hash via SA2UL, compare to protected reference
+          alt Violation
+            MON->>LOG: Log tamper evidence (region, expected vs actual)
+            MON->>SAFE: Coordinate graded response (warn/degrade/reset)
+          end
+        end
+      end
     end
   end
 ```
@@ -138,6 +155,11 @@ sequenceDiagram
 ### 4.2 Behavioral requirement focus
 - No bypass path: BootROM authentication of System Firmware runs on every power-on/reset with no
   disable option on HS-SE devices (CSR-1, CSR-4, CSR-5)
+- A BootROM-stage failure cannot be logged through the normal secure logging path since no software
+  has been released yet; it is only observable as a boot-fail status/error indication, which is why
+  System Firmware becomes the first stage capable of recording an authentication failure (FCR-2)
+- Each stage's authentication failure halts release of the next core rather than falling through to
+  a partially-initialized state - the chain fails closed, one stage at a time (CSR-1, FCR-1)
 - Runtime detection continues after boot completion, independent of the boot-time chain (CSR-2, CSR-6)
 - SWREV-based anti-rollback is checked at every stage of the chain, not only at flashing time (TCR-3)
 - Boot/authentication failure handling (halt vs. logged/measured continuation) is a deliberate,

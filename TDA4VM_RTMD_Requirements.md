@@ -91,24 +91,44 @@ graph LR
 
 ```mermaid
 sequenceDiagram
-  participant S as RTMD Scheduler
-  participant C as Integrity Checker
+  participant S as RTMD Scheduler (periodic tick + event triggers)
+  participant C as Integrity Checker (R5F/A72 task)
+  participant Y as SA2UL (SHA-256/512)
+  participant N as Protected NvM (reference digests)
   participant P as Policy Engine
-  participant M as Safety Manager
+  participant DM as DEM (event manager)
+  participant EM as EcuM/Safety State Manager
   participant L as Secure Logging
+  participant W as Watchdog/Reset Controller
 
-  S->>C: Trigger periodic/event check
-  C->>C: Compute hash and compare reference
-  alt No violation
-    C-->>S: Pass
-  else Violation detected
-    C->>P: Detection class + confidence
-    P->>M: Request graded action
-    P->>L: Persist evidence + action
+  alt Periodic schedule table tick
+    S->>C: Trigger scheduled region check (code segment / calibration table)
+  else Event trigger
+    S->>C: Reset-reason register change, debug-state change (from TIFS), or repeated auth failure count
+  end
+  C->>Y: Compute digest of target region
+  Y-->>C: Digest
+  C->>N: Fetch protected reference digest (itself integrity-tagged)
+  C->>C: Compare digest vs reference
+  alt Match
+    C-->>S: Pass, no action
+  else Mismatch
+    C->>P: Region ID + digest delta + confidence
+    P->>P: Classify severity (code-region tamper = critical, calibration drift = moderate)
+    P->>DM: Raise DEM event (event ID, region, timestamp, task ID)
+    P->>EM: Request graded response bounded by current safety state (no abrupt actuator change mid-cycle)
+    EM-->>P: Approved response tier (warn/degrade/reset)
+    P->>L: Persist evidence (region, expected vs actual digest, action, watchdog/reset context)
+    opt Response tier = reset
+      P->>W: Request controlled ECU reset
+      W->>C: Re-arm monitor after DMSC BootROM chain re-establishes known-good baseline
+    end
   end
 ```
 
 ### 4.2 Behavioral requirement focus
-- Monitoring combines periodic and trigger conditions (CSR-RTMD-4, FCR-RTMD-1)
-- Response is policy-based and safety-coordinated (CSR-RTMD-2, CSR-RTMD-5)
-- Detection evidence is preserved for forensics (CSR-RTMD-3, TCR-RTMD-3)
+- Monitoring runs on both a scheduled cadence and discrete triggers (reset-reason register, TIFS debug-state change notification, repeated SecurityAccess failures) rather than a single polling loop (CSR-RTMD-4, FCR-RTMD-1)
+- Severity classification is table-driven (region/class -> tier), and any reset-tier response is arbitrated through EcuM/safety-state logic so it cannot fire mid safety-critical actuation cycle (CSR-RTMD-2, CSR-RTMD-5, FCR-RTMD-3)
+- Reference digests themselves are protected (stored with their own integrity tag in NvM) so a compromised reference cannot mask a real violation (TCR-RTMD-2)
+- Evidence recorded includes region ID, expected-vs-actual digest, and correlated watchdog/reset/debug-state context to support root-cause diagnosis, not just a pass/fail flag (CSR-RTMD-3, TCR-RTMD-4)
+- A reset-tier response re-enters the DMSC BootROM chain, giving the monitor a freshly attested baseline rather than re-arming against a potentially compromised state (TCR-RTMD-3)

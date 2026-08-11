@@ -1,0 +1,203 @@
+---
+name: automotive-cybersecurity-requirements
+description: 'Automotive cybersecurity requirements engineering for a TDA4VM (TI Jacinto 7 / J721E) ADAS ECU: secure boot, JTAG/debug, secure access (UDS SecurityAccess), secure communication (SecOC), secure logging, OTA/FOTA/SOTA, secure reprogramming, and runtime tamper monitoring. Use when writing, reviewing, or extending CSR/FCR/TCR/SWR/HWR requirement documents in this repo, grounding technical claims in real TI TDA4VM/TISCI facts instead of generic assumptions, drawing on ISO 21434 / ISO 14229 / AUTOSAR SecOC concepts, or authoring/validating Mermaid architecture and sequence diagrams for these documents.'
+---
+
+# Automotive Cybersecurity Requirements (TDA4VM ADAS ECU)
+
+This repo tracks cybersecurity requirements for a TDA4VM (TI Jacinto 7 / J721E) ADAS ECU across
+8 topic documents. The goal is **reality-grounded** requirements engineering for learning/interview
+prep, not generic textbook boilerplate — always prefer a verified chip/standard fact over a
+plausible-sounding invented one.
+
+## Repo document set
+
+| File | Topic |
+|---|---|
+| `TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md` | Secure/authentic boot chain + runtime integrity (most safety/security-critical doc) |
+| `TDA4VM_Secure_JTAG_Requirements.md` | Debug/JTAG access control |
+| `TDA4VM_SecureAccess_Requirements.md` | UDS SecurityAccess (diagnostic protected services) |
+| `TDA4VM_Secure_Communication_Requirements.md` | In-vehicle (SecOC-style) + off-board comms |
+| `TDA4VM_Secure_Logging_Requirements.md` | Tamper-evident security event logging |
+| `TDA4VM_OTA_FOTA_SOTA_Requirements.md` | Over-the-air update security |
+| `TDA4VM_Secure_Reprogramming_Requirements.md` | UDS-based flashing/reprogramming |
+| `TDA4VM_RTMD_Requirements.md` | Runtime Tamper Monitoring and Detection |
+
+## Document structure convention (every file follows this exactly)
+
+```
+## 1. System Static Architecture
+### 1.1 System entities
+### 1.2 Trust boundaries and interfaces   (+ mermaid `graph LR`)
+### 1.3 System-level requirement allocation  <- full CSR/FCR/TCR text, NOT bare "ID-1 to ID-5" ranges
+## 2. Hardware Static Architecture
+### 2.1 Hardware elements
+### 2.2 Hardware responsibility mapping
+## 3. Software Static Architecture
+### 3.1 Software blocks   (+ mermaid `graph LR`)
+### 3.2 Software requirement allocation
+## 4. Dynamic / Behavioral Views
+### 4.1 [sequence name]   (+ mermaid `sequenceDiagram` with explicit alt/opt failure paths)
+### 4.2 Behavioral requirement focus
+```
+
+Requirement ID taxonomy used consistently: **CSR** (Cybersecurity Requirement, item-level) →
+**FCR** (Functional Cybersecurity Concept) → **TCR** (Technical Cybersecurity Concept, TDA4VM-specific)
+→ **SWR** (Software Requirement) / **HWR** (Hardware Requirement). Each file uses a topic suffix,
+e.g. `CSR-SA-1` (Secure Access), `CSR-JTAG-1`, `CSR-OTA-1`, `CSR-SRP-1` (reprogramming), `CSR-RTMD-1`,
+`CSR-LOG-1`, `CSR-COM-1`, and the boot doc uses bare `CSR-1`/`FCR-1`/`TCR-1`.
+
+**Rule:** Section 1.3 must always spell out full requirement text under `**CSR**`/`**FCR**`/`**TCR**`
+bold subheadings — never collapse to an ID range like "CSR-SA-1 to CSR-SA-5".
+
+## Grounded TDA4VM/J721E facts (verified against TI TISCI documentation)
+
+- **DMSC** (Device Management and Security Controller): dedicated Cortex-M3 core. Executes the
+  **immutable BootROM** at power-on, then hosts **System Firmware** (SYSFW, aka **TIFS** in newer
+  TI SDKs), which exposes the **TISCI** message API.
+- Compute domains: dual Cortex-A72 (HLOS: Linux/QNX), 6x Cortex-R5F (real-time/safety incl. secondary
+  bootloader/SBL), C7x DSP, GPU, vision accelerators.
+- **SA2UL**: hardware crypto accelerator, confirmed specific to J721E/TDA4VM (newer chips like
+  J721S2/J722S/J784S4 use SA3UL instead — don't conflate).
+- **eFuse array** holds: hash of customer root-of-trust public keys (**SMPK**/**BMPK**), **KEYREV**
+  (selects active key: 1=SMPK, 2=BMPK), **SWREV** (monotonic anti-rollback counter), device security
+  type (GP/HS-FS/HS-SE), and a permanent JTAG-disable flag.
+- **Authentication mechanism**: X.509 certificates, **RSA-4K** signature (RSASSA-PKCS1-v1_5,
+  RFC-8017) over a **SHA2-512** payload hash, verified against the eFuse SMPK/BMPK key hash.
+- Key **TISCI messages**: `TISCI_MSG_PROC_AUTH_BOOT` (authenticate/release a processor core),
+  `TISCI_MSG_OPEN_DEBUG_FWLS` (JTAG unlock via message channel), `TISCI_MSG_DISABLE_JTAG_UNLOCK`
+  (permanent efuse-based JTAG lockout), `TISCI_MSG_GET_SOC_UID`.
+- **Boot chain (grounded, use this exact order)**: DMSC immutable BootROM → System Firmware/TIFS →
+  R5F SBL → A72 application. Each stage authenticates the next via `TISCI_MSG_PROC_AUTH_BOOT`.
+  Do NOT use the older generic "RBL → TIFS → SBL" phrasing — it's imprecise about which stage does
+  the immutable first-boot authentication.
+  - **Nuance**: a BootROM-stage authentication failure cannot be logged via the normal secure
+    logging path since no software has run yet — it's only observable as a boot-fail status/error
+    pin. System Firmware is the first stage capable of writing an actual log entry.
+- **JTAG/debug default state depends on device security type, not a single fixed default**:
+
+  | Device type | M3/DMSC JTAG | Other core JTAG |
+  |---|---|---|
+  | GP (General Purpose) | Open | Open |
+  | HS-FS (Field Securable) | Closed | Open |
+  | HS-SE (Security Enforced) | Closed | Closed |
+
+  Debug unlock requires a distinct **X.509 debug certificate** (not the boot cert) with extensions
+  `debugUID`, `debugType`, `coreDbgEn`, `coreDbgSecEn`, and a Software Revision Extension, signed by
+  SMPK/BMPK. Validation checks: cert revision ≥ `min_cert_rev`, UID match (unless
+  `allow_wildcard_unlock` — dev/lab only, never with production keys), requested privilege/core
+  scope. Delivered via `TISCI_MSG_OPEN_DEBUG_FWLS` message OR Sec-AP (Secure Access Point) over JTAG
+  pins (used by CCS `dbgauth`), depending on whether the host already has message-channel access.
+  Board config controls: `allow_jtag_unlock`, `allow_wildcard_unlock`, `min_cert_rev`,
+  `jtag_unlock_hosts`. The M3/DMSC JTAG path can never be software-opened on HS-FS/HS-SE.
+
+## Automotive standards vocabulary used for nuance/realism
+
+- **ISO 14229-1 (UDS)**: SecurityAccess is service `0x27` (odd subfunction = requestSeed, even =
+  sendKey). Relevant NRCs: `0x35` invalidKey, `0x36` exceedNumberOfAttempts, `0x37`
+  requiredTimeDelayNotExpired. Reprogramming flow uses `0x10` (DiagnosticSessionControl,
+  programmingSession `0x02`), `0x27`, `0x31` (RoutineControl — CheckProgrammingPreconditions /
+  CheckProgrammingDependencies / EraseMemory), `0x34`/`0x36`/`0x37` (RequestDownload/TransferData/
+  RequestTransferExit), `0x11` (ECUReset to trigger activation).
+- **AUTOSAR SecOC** (Secure Onboard Communication): per-PDU freshness value (truncated counter) +
+  MAC (e.g. AES-128-CMAC truncated to configured length) appended to the Authentic PDU. Freshness
+  and MAC are checked independently — a valid MAC with stale freshness is still a replay and must
+  be dropped.
+- **ISO 21434**: source of the CSR/FCR/TCR concept-layer vocabulary (item-level cybersecurity
+  requirement → functional concept → technical concept).
+- Dual-bank (A/B) flash pattern for OTA/reprogramming: candidate writes only ever touch the inactive
+  bank; activation re-enters the full DMSC BootROM chain and reverts to the last known-good bank on
+  verification failure.
+
+## Mermaid diagram authoring rules (hard-won from real parse failures)
+
+Always validate with the real parser, not just eyeballing — see
+[the validation procedure](#validating-mermaid-diagrams-for-real) below. Concrete rules:
+
+1. Use `graph LR` not `flowchart LR` for the static-architecture diagrams (compatibility).
+2. Never chain edges in one flowchart line like `A -->|label| B --> C` — split into separate edge
+   lines.
+3. In `sequenceDiagram` blocks: **never use a semicolon (`;`) inside message text** — Mermaid treats
+   `;` as a statement separator (like a newline), silently truncating the message and breaking the
+   parse. Use a comma instead.
+4. **Never use a reserved keyword as a participant alias**, even with different casing — e.g. an
+   alias `Off` collides with the `off` keyword used in `autonumber on/off`-style directives.
+   Reserved words to avoid as aliases: `end`, `alt`, `opt`, `loop`, `par`, `and`, `else`, `note`,
+   `activate`, `deactivate`, `autonumber`, `on`, `off`, `rect`, `box`, `critical`, `option`, `break`.
+5. **Never embed an arrow-like token (`->`, `-->`) inside message text** (e.g.
+   `A->>A: X -> Y -> Z`) — rewrite using "then" instead; it can confuse the arrow lexer.
+6. Every `alt`/`opt`/`loop` must have a matching `end`; every `else` must be inside an open `alt`.
+7. Give every sequence diagram explicit failure/`alt` branches (auth failure, validation failure,
+   lockout, rollback) — a diagram with only the happy path reads as unrealistic to a security
+   reviewer.
+
+### Validating Mermaid diagrams for real
+
+`get_errors` (VS Code diagnostics) does **not** catch Mermaid syntax errors. To truly validate,
+install a portable Node.js (no root needed) and run the real `mermaid` parser:
+
+```bash
+mkdir -p ~/.local/opt && cd ~/.local/opt
+curl -s -O https://nodejs.org/dist/v20.17.0/node-v20.17.0-linux-x64.tar.xz
+tar xf node-v20.17.0-linux-x64.tar.xz
+export PATH="$HOME/.local/opt/node-v20.17.0-linux-x64/bin:$PATH"
+
+mkdir -p ~/.local/mermaid-check && cd ~/.local/mermaid-check
+npm init -y >/dev/null 2>&1
+npm install mermaid@10 jsdom@21 --no-audit --no-fund   # jsdom@22+ crashes under CJS require
+```
+
+Then run a script that creates a `jsdom` window/document, imports `mermaid`, extracts every
+` ```mermaid ` block from the target `.md` files via regex, and calls `await mermaid.parse(code)`
+on each, catching/printing errors. (jsdom v21 is the last version compatible with a plain
+`require`-based Node script; v22+ pulls in an ESM-only `@csstools/css-calc` dependency that crashes.)
+
+## Reference documentation (verified live, fetch again if TI reorganizes)
+
+Use `fetch_webpage` on these before adding new grounded facts — don't invent TI-specific details
+from memory. All links below were confirmed reachable.
+
+**TDA4VM product / chip level**
+- Product page (features, product overview): https://www.ti.com/product/TDA4VM
+- Datasheet (Rev. L): https://www.ti.com/lit/gpn/TDA4VM (HTML: https://www.ti.com/document-viewer/TDA4VM/datasheet)
+- J721E/DRA829/TDA4VM Technical Reference Manual (Rev. D): https://www.ti.com/lit/zip/SPRUIL1
+
+**TISCI User Guide** (root: https://software-dl.ti.com/tisci/esd/latest/index.html)
+- Ch.1 Introduction: https://software-dl.ti.com/tisci/esd/latest/1_intro/TISCI.html
+- Ch.2 TISCI Message Documentation (PROC_AUTH_BOOT, OPEN_DEBUG_FWLS, etc.): https://software-dl.ti.com/tisci/esd/latest/2_tisci_msgs/index.html
+- Ch.3 Security Board Configuration (`allow_jtag_unlock`, `allow_wildcard_unlock`, `min_cert_rev`, `jtag_unlock_hosts`): https://software-dl.ti.com/tisci/esd/latest/3_boardcfg/BOARDCFG_SEC.html
+- Ch.5 SoC Family Specific Docs, J721E section: https://software-dl.ti.com/tisci/esd/latest/5_soc_doc/index.html#j721e
+- Ch.6 Topic Guide — System Firmware Authentication and Decryption Requests: https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/authentication.html
+- Ch.6 Topic Guide — Signing binaries for Secure Boot on HS Devices: https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/secure_boot_signing.html
+- Ch.6 Topic Guide — Secure Debug User Guide (device security type table, debug cert fields): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/secure_debug.html
+- Ch.6 Topic Guide — Run time read/write to KEYREV and SWREV: https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/otp_revision.html
+- Ch.6 Topic Guide — Using Extended OTP (eFuse layout background): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/extended_otp.html
+- Ch.6 Topic Guide — Key Writer: https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/key_writer.html
+- Ch.6 Topic Guide — Using OpenSSL for certificate creation (X.509 cert structure/signing in practice): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/openssl_usage.html
+- Ch.6 Topic Guide — Cryptographic Services (SA2UL-backed crypto ops exposed via TISCI): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/csp.html
+- Ch.6 Topic Guide — RSASSA-PSS Signature Algorithm: https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/signature_algos.html
+- Ch.6 Topic Guide — Firewall FAQ (SA2UL/peripheral firewall access control via TISCI): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/firewall_faq.html
+- Ch.6 Topic Guide — Mailbox IPC (host-to-DMSC transport underlying TISCI messages): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/mailbox_ipc.html
+
+**Non-TI standards referenced for realism** (verify current edition/scope before quoting specifics)
+- ISO 14229-1 (UDS) — SecurityAccess `0x27`, RequestDownload/TransferData/RequestTransferExit
+  `0x34/0x36/0x37`, RoutineControl `0x31`, ECUReset `0x11`, NRCs `0x35/0x36/0x37`.
+- ISO 21434 — cybersecurity engineering lifecycle; source of the CSR/FCR/TCR concept-layer split.
+- AUTOSAR SecOC (Secure Onboard Communication) specification — freshness value + MAC framing.
+- ISO 24089 — software update engineering (OTA/campaign concepts referenced loosely, not quoted).
+
+## Workflow for adding/editing a requirement doc
+
+1. Follow the exact 4-view section structure above.
+2. Ground every hardware/technical claim in the facts and references above (fetch the relevant TI
+   page if unsure) rather than inventing plausible-sounding generic security architecture.
+3. Write full requirement text in Section 1.3 (never bare ID ranges).
+4. Give the Section 4.1 sequence diagram explicit success **and** failure branches referencing real
+   protocol elements (UDS service IDs, TISCI messages, NRCs, SecOC fields) as applicable.
+5. Run the Mermaid validation procedure above before considering diagram edits done.
+
+## Environment notes for this workspace
+
+- `rg` (ripgrep) is not installed — use `grep`.
+- No passwordless `sudo` — don't rely on `apt install`; download portable toolchains instead
+  (see Node.js example above).

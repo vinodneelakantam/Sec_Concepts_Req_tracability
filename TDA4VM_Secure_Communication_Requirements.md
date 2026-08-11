@@ -58,7 +58,7 @@ graph LR
 ### 2.2 Hardware responsibility mapping
 - HWR-COM-1: Throughput/latency supports enabled protections
 - HWR-COM-2: Key material handling uses protected hardware path
-- TCR-COM-1: Crypto-heavy operations offloaded to SA2UL path
+- HWR-COM-3: SA2UL provides the hardware crypto path for MAC/signature/encryption operations (TCR-COM-1)
 
 ## 3. Software Static Architecture
 
@@ -88,29 +88,49 @@ graph LR
 
 ## 4. Dynamic / Behavioral Views
 
-### 4.1 Protected communication flow
+### 4.1 Protected in-vehicle communication flow (AUTOSAR SecOC-style) and off-board channel
 
 ```mermaid
 sequenceDiagram
-  participant S as Sender
-  participant TS as TX Security
-  participant RS as RX Security
-  participant C as Crypto
-  participant A as Application
+  participant App as Sender Application
+  participant Tx as SecOC TX
+  participant FM as Freshness Manager
+  participant Y as SA2UL (AES-128-CMAC)
+  participant Bus as CAN-FD/Ethernet
+  participant Rx as SecOC RX
+  participant FMR as Freshness Manager (receiver)
+  participant AppR as Receiver Application
+  participant L as Secure Logging
+  participant OB as Off-board TLS Session (cloud/backend)
 
-  S->>TS: Plain payload
-  TS->>C: Compute MAC/encrypt + freshness
-  TS-->>RS: Protected frame
-  RS->>C: Verify MAC/decrypt/freshness
-  alt Valid
-    RS->>A: Deliver payload
-  else Invalid
-    RS->>RS: Drop frame
-    RS->>RS: Raise security event
+  App->>Tx: PDU (Secured PDU ID X, data)
+  Tx->>FM: Get current freshness value for PDU ID X
+  FM-->>Tx: Freshness counter (truncated for wire format)
+  Tx->>Y: Compute MAC over (data || freshness) with pre-shared symmetric key
+  Y-->>Tx: Truncated MAC (configured length)
+  Tx->>Bus: Secured I-PDU (data || truncated freshness || truncated MAC)
+  Bus->>Rx: Deliver frame
+  Rx->>FMR: Reconstruct full freshness from truncated value + local window
+  alt Freshness outside acceptable window
+    Rx->>L: Drop - replay/freshness violation (PDU ID, window delta)
+  else Freshness in window
+    Rx->>Y: Recompute expected MAC with same symmetric key
+    Y-->>Rx: Expected MAC
+    alt MAC mismatch
+      Rx->>L: Drop - authentication failure (PDU ID, timestamp)
+    else MAC match
+      Rx->>AppR: Deliver payload (Verified + Fresh)
+    end
   end
+
+  Note over OB: Independent off-board path
+  OB->>OB: TLS 1.2+/mTLS session using eFuse-anchored device X.509 identity
+  OB->>L: Session establishment/failure logged separately from in-vehicle SecOC path
 ```
 
 ### 4.2 Behavioral requirement focus
-- Authentication/integrity is mandatory for critical messages (CSR-COM-1)
-- Freshness checks prevent replay acceptance (CSR-COM-3, TCR-COM-3)
-- Invalid metadata causes fail-closed behavior (CSR-COM-4, SWR-COM-1)
+- In-vehicle protection uses SecOC-style authentication: a truncated freshness value plus an AES-128-CMAC-class MAC (SA2UL-assisted) appended to the payload, not a bare checksum (CSR-COM-1, TCR-COM-1)
+- Freshness is checked independently of the MAC - a frame with a valid MAC but out-of-window freshness is still dropped as a replay (CSR-COM-3, TCR-COM-3)
+- Any verification failure (freshness or MAC) is fail-closed: the frame is dropped before reaching the receiver application, and a security event is raised rather than silently accepted (CSR-COM-4, SWR-COM-1)
+- Off-board (cloud/backend) sessions use a separate TLS/mTLS trust path anchored to the device's eFuse-derived identity, independent from the in-vehicle bus-level MAC/freshness scheme (CSR-COM-2, TCR-COM-2)
+- Repeated verification failures on the same Secured PDU ID are correlated across the RTMD/logging boundary for escalation, not treated as isolated drops (CSR-COM-5, TCR-COM-4)

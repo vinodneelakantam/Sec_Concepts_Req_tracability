@@ -58,7 +58,7 @@ graph LR
 ### 2.2 Hardware responsibility mapping
 - HWR-SRP-1: Active/candidate image separation with atomic metadata updates
 - HWR-SRP-2: DMSC BootROM + System Firmware enforce activation authenticity checks
-- TCR-SRP-2: eFuse SWREV anti-rollback policy anchored in the hardware trust chain
+- HWR-SRP-3: eFuse SWREV anti-rollback policy anchored in the hardware trust chain (TCR-SRP-2)
 
 ## 3. Software Static Architecture
 
@@ -87,31 +87,61 @@ graph LR
 
 ## 4. Dynamic / Behavioral Views
 
-### 4.1 Secure reprogramming sequence
+### 4.1 Secure reprogramming sequence (ISO 14229-1 UDS flashing flow)
 
 ```mermaid
 sequenceDiagram
-  participant U as Update Source
-  participant M as Update Manager
-  participant V as Validator/Crypto
-  participant I as Installer
-  participant B as Secure Boot Chain
+  participant Tl as Tool (Tester/OTA backend)
+  participant D as DCM (UDS stack)
+  participant Y as SA2UL Crypto
+  participant U as Update Manager
+  participant Fd as Flash Driver (candidate/inactive bank)
+  participant Dm as DMSC BootROM/System Firmware
   participant L as Secure Logging
 
-  U->>M: Transfer candidate image + metadata
-  M->>V: Verify signature/hash/version/compatibility
-  alt Validation pass
-    M->>I: Commit candidate image
-    I->>B: Trigger activation reset
-    B-->>M: Boot verification result
-    M->>L: Log success state
-  else Validation fail
-    M->>M: Reject activation
-    M->>L: Log failure + keep known-good image
+  Tl->>D: DiagnosticSessionControl (0x10, programmingSession 0x02)
+  Tl->>D: SecurityAccess (0x27) seed/key exchange - see Secure Access doc
+  D-->>Tl: Access granted (programming level)
+  Tl->>D: RoutineControl (0x31) CheckProgrammingPreconditions / EraseMemory (candidate bank)
+  Tl->>D: RequestDownload (0x34) - address, size, compression/encryption format ID
+  loop TransferData blocks
+    Tl->>D: TransferData (0x36) block N
+    D->>U: Forward block
+    U->>Fd: Write block to candidate (inactive) bank
+    U->>U: Accumulate streaming hash over received blocks
+  end
+  Tl->>D: RequestTransferExit (0x37)
+  D->>U: Finalize candidate image
+  U->>Y: Verify full-image X.509 signature (RSA-4K, SHA2-512) + SWREV vs manifest
+  alt Signature/version check fails
+    Y-->>U: Invalid
+    U->>Fd: Discard candidate bank, keep active bank untouched
+    U->>L: Log validation failure
+    D-->>Tl: Negative response (verification failed)
+  else Signature/version check passes
+    Y-->>U: Valid
+    Tl->>D: RoutineControl (0x31) CheckProgrammingDependencies (cross-ECU compatibility)
+    alt Dependency check fails
+      D-->>Tl: Negative response, activation blocked
+      U->>L: Log dependency failure, candidate retained but not activated
+    else Dependency check passes
+      Tl->>D: ECUReset (0x11) - triggers activation
+      D->>Dm: Reset into candidate bank
+      Dm->>Dm: DMSC BootROM then System Firmware/TIFS then R5F SBL verification (same chain as normal boot)
+      alt Boot verification fails
+        Dm-->>Fd: Revert boot-select metadata to last known-good bank
+        Dm->>L: Log activation failure + automatic rollback
+      else Boot verification passes
+        Dm-->>U: Boot success on new image
+        U->>L: Log activation success (session ID, SWREV, timestamp)
+      end
+    end
   end
 ```
 
 ### 4.2 Behavioral requirement focus
-- Staged workflow and explicit commit decision are mandatory (FCR-SRP-1, FCR-SRP-2)
-- Activation always passes through secure boot chain (CSR-SRP-4, TCR-SRP-3)
-- Known-good recovery remains available after failed activation (CSR-SRP-3, SWR-SRP-4)
+- Reprogramming follows the standard UDS staged workflow - session control, SecurityAccess, erase/precondition check, block-wise download, transfer exit, dependency check, then reset-triggered activation - with an explicit commit decision at each gate (FCR-SRP-1, FCR-SRP-2)
+- The active bank is never modified during download; only the candidate/inactive bank is written, so an interrupted transfer cannot leave the running image undefined (CSR-SRP-3, HWR-SRP-1)
+- Full-image signature and SWREV/anti-rollback checks happen twice conceptually: once by the Update Manager/SA2UL at transfer-exit, and again by DMSC BootROM/System Firmware at activation reset using the same chain as ordinary power-on (CSR-SRP-4, TCR-SRP-3)
+- Cross-ECU dependency/compatibility checks (RoutineControl CheckProgrammingDependencies) gate activation independently from image-integrity checks (CSR-SRP-5)
+- A failed activation automatically reverts to the last known-good bank rather than leaving the ECU non-bootable (CSR-SRP-3, SWR-SRP-4)

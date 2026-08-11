@@ -90,22 +90,43 @@ graph LR
 
 ```mermaid
 sequenceDiagram
-  participant P as Security Producer
+  participant P as Security Producer (boot/JTAG/comm/OTA/RTMD/SecurityAccess)
   participant M as Log Manager
-  participant C as Integrity Crypto
-  participant S as Protected Storage
-  participant B as Backend
+  participant Y as SA2UL (HMAC-SHA256)
+  participant N as Protected NvM (crash-consistent write)
+  participant R as Rotation Manager
+  participant Rd as Redaction Engine
+  participant GW as Gateway/SOC Uplink
+  participant Bk as Backend
 
-  P->>M: Emit event
-  M->>C: Generate integrity tag/chain marker
-  C-->>M: Tag
-  M->>S: Persist event batch
-  alt Export policy matched
-    M->>B: Upload authenticated log batch
+  P->>M: Structured event (timestamp, event ID, severity, module ID, fields)
+  M->>Y: chain_value_n = HMAC-SHA256(chain_value_n-1 || event)
+  alt HMAC generation fails
+    Y-->>M: Error
+    M->>N: Persist degraded-integrity-flagged record (fail-safe, not dropped)
+  else HMAC succeeds
+    Y-->>M: chain_value_n
+    M->>N: Write-ahead record + chain_value_n (crash-consistent double-buffer)
+  end
+  R->>N: Check retention pressure vs severity policy
+  alt Storage pressure
+    R->>R: Evict oldest lowest-severity records first, never evict flagged critical/security events
+  end
+  opt Scheduled/triggered export
+    M->>Rd: Apply privacy policy (mask/strip PII-like fields, e.g., partial VIN)
+    Rd-->>M: Redacted batch
+    M->>GW: Authenticated upload (mTLS or signed batch) + last-exported chain marker/sequence number
+    GW->>Bk: Forward batch
+    Bk->>Bk: Verify signature/HMAC chain continuity vs last received marker
+    alt Gap detected in chain sequence
+      Bk->>Bk: Flag potential tamper/loss-of-evidence incident
+    end
   end
 ```
 
 ### 4.2 Behavioral requirement focus
-- Logging is tamper-evident and integrity-protected (CSR-LOG-1, FCR-LOG-1)
-- Critical evidence survives retention pressure (CSR-LOG-2, SWR-LOG-3)
-- Export preserves provenance and privacy requirements (CSR-LOG-5, TCR-LOG-4)
+- Every record is chained to the previous one via an SA2UL-generated HMAC, so a gap or edit breaks the chain and is independently detectable by the backend, not just the local device (CSR-LOG-1, FCR-LOG-1)
+- Writes are crash-consistent (write-ahead/double-buffer) so a power loss mid-write cannot corrupt or silently truncate the chain (TCR-LOG-2)
+- Retention pressure evicts oldest/lowest-severity records first; records flagged as critical/security-relevant are never silently evicted (CSR-LOG-2, SWR-LOG-3)
+- If integrity-tag generation itself fails, the event is still persisted with a degraded-integrity flag rather than dropped, preserving FCR-LOG-4's fail-safe (not fail-silent) requirement
+- Export carries a chain-continuity marker so the backend can detect and flag gaps (evidence loss or tampering in transit/at rest), and privacy redaction is applied before the batch leaves the ECU boundary (CSR-LOG-5, TCR-LOG-4)

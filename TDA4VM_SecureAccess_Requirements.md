@@ -57,7 +57,7 @@ graph LR
 ### 2.2 Hardware responsibility mapping
 - HWR-SA-1: Auth timing targets met through crypto acceleration
 - HWR-SA-2: Hardware-backed credential handling and key protection
-- TCR-SA-3: Lifecycle state contributes to trust decisions
+- HWR-SA-3: Device security type (GP/HS-FS/HS-SE) and lifecycle state bound which access levels are reachable (TCR-SA-3)
 
 ## 3. Software Static Architecture
 
@@ -86,30 +86,51 @@ graph LR
 
 ## 4. Dynamic / Behavioral Views
 
-### 4.1 Secure access challenge-response flow
+### 4.1 Secure access challenge-response flow (ISO 14229-1 SecurityAccess, service 0x27)
 
 ```mermaid
 sequenceDiagram
   participant T as Tester
-  participant D as DCM SecurityAccess
-  participant C as Crypto Module
+  participant D as DCM (UDS stack)
+  participant Y as SA2UL Crypto
+  participant K as Protected Key Store
   participant G as Protected Service Gate
   participant L as Secure Logging
 
-  T->>D: Request security access seed/challenge
-  D->>T: Nonce/challenge
-  T->>D: Response token
-  D->>C: Verify token + freshness
-  alt Valid
-    D->>G: Grant scoped access with timeout
-    T->>G: Request protected service
-  else Invalid
-    D->>L: Log failure + increment retry
-    D-->>T: Deny / lockout/backoff
+  T->>D: DiagnosticSessionControl (0x10, extended/programming session)
+  T->>D: SecurityAccess requestSeed (0x27, odd subfunction = target level)
+  D->>D: Check attempt counter/backoff timer
+  alt Backoff still active
+    D-->>T: NRC 0x37 requiredTimeDelayNotExpired
+  else Allowed to proceed
+    D->>Y: Generate seed (TRNG) bound to session + requested level
+    Y-->>D: Seed
+    D-->>T: Seed
+    T->>T: Compute key via level-specific algorithm (e.g., AES-128-CMAC challenge) using provisioned secret
+    T->>D: SecurityAccess sendKey (0x27, even subfunction)
+    D->>Y: Verify received key vs expected (constant-time compare)
+    alt Key invalid
+      Y-->>D: Mismatch
+      D->>D: Increment attempt counter
+      D->>L: Log failed attempt (session, level, timestamp)
+      alt Attempts exceeded
+        D-->>T: NRC 0x36 exceedNumberOfAttempts, start backoff timer
+      else Attempts remain
+        D-->>T: NRC 0x35 invalidKey
+      end
+    else Key valid
+      Y-->>D: Match
+      D->>K: Confirm no long-term secret exposed in plaintext (session-scoped only)
+      D->>G: Grant access level bound to current session, arm S3 timer/reset/session-downgrade revocation
+      D->>L: Log successful unlock (session, level, timestamp)
+      T->>G: RequestDownload (0x34) / RoutineControl (0x31) / WriteDataByIdentifier (0x2E) on protected DIDs
+    end
   end
 ```
 
 ### 4.2 Behavioral requirement focus
-- Deny-by-default unless access state is valid (CSR-SA-1, FCR-SA-2)
-- Anti-replay and freshness are mandatory in challenge-response (CSR-SA-2)
-- Retries, lockout, timeout, and automatic revocation are enforced (CSR-SA-3, CSR-SA-5, SWR-SA-2)
+- Access is deny-by-default: no protected service gate opens until a `sendKey` verification succeeds for the matching session and level (CSR-SA-1, FCR-SA-2)
+- Seeds are single-use, TRNG-generated, and bound to the current session and requested level, preventing replay of a previously observed seed/key pair (CSR-SA-2)
+- Failure handling follows ISO 14229-1 NRCs explicitly: 0x35 invalidKey, 0x36 exceedNumberOfAttempts, 0x37 requiredTimeDelayNotExpired drive the retry/backoff state machine rather than a generic "deny" (CSR-SA-3)
+- Granted access is automatically revoked on S3 timer expiry, ECU reset, or session downgrade to default session - there is no persistent unlock across power cycles (CSR-SA-5, SWR-SA-2)
+- The shared secret/key derivation material never leaves protected key storage in plaintext; only the computed key/seed values cross the tester interface (TCR-SA-2)

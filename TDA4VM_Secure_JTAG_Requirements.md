@@ -117,28 +117,45 @@ sequenceDiagram
   participant T as Debug Tool (dbgauth/TISCI host)
   participant S as Sec-AP / TISCI transport
   participant F as System Firmware (TIFS)
+  participant E as eFuse Policy (device type, disable flag)
   participant J as JTAG Controller
   participant L as Secure Logging
 
   T->>S: Deliver X.509 debug certificate (debugUID, debugType, coreDbgEn/SecEn, SWREV ext)
-  S->>F: Forward certificate for validation
-  F->>F: Verify signature vs eFuse SMPK/BMPK hash
-  F->>F: Check cert revision >= min_cert_rev, UID match (or wildcard policy), scope validity
-  alt Valid
-    F->>J: Unlock requested cores at requested debug level
-    F->>L: Log unlock success
-  else Invalid
-    F->>L: Log validation failure
-    F-->>T: Deny unlock
+  alt Host has message-channel access
+    S->>F: Forward via TISCI_MSG_OPEN_DEBUG_FWLS
+  else Physical debug port only (JTAG already closed)
+    S->>F: Forward via Sec-AP transfer over JTAG pins
+  end
+  F->>E: Check TISCI_MSG_DISABLE_JTAG_UNLOCK permanent-disable efuse
+  alt Unlock permanently disabled
+    F->>L: Log denied attempt - permanent lockout in effect
+    F-->>T: Deny unlock (no further validation)
+  else Unlock still permitted
+    F->>E: Read device security type (GP/HS-FS/HS-SE)
+    F->>F: Verify certificate signature vs eFuse SMPK/BMPK hash (selected by KEYREV)
+    F->>F: Check cert revision >= min_cert_rev, UID match (or explicit wildcard policy), requested core/privilege scope
+    alt Certificate or scope invalid
+      F->>L: Log validation failure (reason: signature/revision/UID/scope)
+      F-->>T: Deny unlock
+    else Certificate and scope valid
+      F->>J: Unlock requested cores at requested debug level (bounded by device security type)
+      F->>L: Log unlock success (UID, cores, privilege level, timestamp)
+    end
   end
 ```
 
 ### 4.2 Behavioral requirement focus
 - Debug unlock is always certificate-based (X.509, RSA-signed), never a static password or
   shared secret (CSR-JTAG-1)
+- The permanent efuse disable flag (set via `TISCI_MSG_DISABLE_JTAG_UNLOCK`) is checked before any
+  certificate validation - once blown, no certificate can re-open debug access (CSR-JTAG-2, TCR-JTAG-3)
 - HS-SE production devices are closed-by-default for all cores; HS-FS devices are closed only
   for the M3/DMSC core by default — the OEM's own board configuration and provisioning must
   close the remaining cores for a production posture (CSR-JTAG-2, FCR-JTAG-1)
+- Delivery uses either the `TISCI_MSG_OPEN_DEBUG_FWLS` message channel or a Sec-AP transfer directly
+  over the JTAG pins, depending on whether the host already has message-channel access or only a
+  physical debug port to a closed device (FCR-JTAG-2)
 - Debug scope (which cores, which privilege level) is explicitly encoded per-certificate via
   `coreDbgEn`/`coreDbgSecEn`/`debugType`, giving least-privilege debug profiles (FCR-JTAG-3)
 - Every unlock attempt, success, or failure is logged; JTAG can be permanently disabled via

@@ -59,7 +59,7 @@ graph LR
 ### 2.2 Hardware responsibility mapping
 - HWR-OTA-1: eFuse-anchored device identity/root keys back backend trust establishment
 - HWR-OTA-2: SA2UL throughput sufficient for signature/hash verification at OTA scale
-- TCR-OTA-2/TCR-OTA-3: Verification and activation depend on the DMSC BootROM -> TIFS -> SBL secure boot chain (see Secure Boot doc)
+- HWR-OTA-3: Verification and activation depend on the DMSC BootROM -> System Firmware/TIFS -> R5F SBL secure boot chain (see Secure Boot doc) (TCR-OTA-2, TCR-OTA-3)
 
 ## 3. Software Static Architecture
 
@@ -92,28 +92,58 @@ graph LR
 
 ```mermaid
 sequenceDiagram
-  participant C as Cloud Backend
-  participant G as Gateway
-  participant E as OTA Client (ECU)
-  participant V as Validator/Crypto
-  participant I as Installer
-  participant B as Secure Boot Chain
+  participant C as Cloud Backend (campaign/signing authority)
+  participant G as Gateway (mTLS terminator)
+  participant E as OTA Client (A72/HLOS)
+  participant Y as SA2UL Crypto (via TIFS)
+  participant F as Flash Manager (A/B bank)
+  participant D as DMSC BootROM/System Firmware
+  participant L as Secure Logging
 
-  C->>G: Campaign + signed manifest + artifact
-  G->>E: Deliver chunks
-  E->>V: Verify chunk integrity + manifest policy
-  V-->>E: Pass/Fail
-  alt Pass
-    E->>I: Commit candidate image
-    I->>B: Trigger activation reset
-    B-->>E: Boot verification result
-    E->>G: Success evidence
-  else Fail
-    E->>G: Reject + failure reason + audit event
+  C->>G: TLS 1.2+/mTLS session (X.509 device cert, cipher policy)
+  C->>G: Signed campaign manifest (target HW/variant, SWREV, artifact SHA-256, chunk hash list)
+  G->>E: Manifest + artifact metadata
+  E->>Y: Verify manifest signature (RSA/ECDSA) vs OEM backend key
+  Y-->>E: Signature valid/invalid
+  E->>E: Check target HW/variant match + candidate SWREV > current eFuse SWREV (anti-downgrade)
+  alt Manifest/version check fails
+    E->>L: Log reject reason (bad signature / HW mismatch / downgrade attempt)
+    E->>G: Reject campaign, no download starts
+  else Manifest accepted
+    loop Chunked resumable transfer
+      G->>E: Chunk N (with sequence number)
+      E->>Y: Verify chunk SHA-256 vs manifest chunk hash list
+      Y-->>E: Pass/Fail
+      alt Chunk fails
+        E->>G: Request retransmit of chunk N
+      else Chunk passes
+        E->>F: Write chunk to inactive bank, persist last-confirmed-block offset
+      end
+    end
+    E->>Y: Verify full-image X.509 signature (RSA-4K sig, SHA2-512 hash) over assembled candidate
+    alt Final signature invalid
+      E->>L: Log final verification failure, discard candidate bank
+      E->>G: Reject + failure reason + audit event
+    else Final signature valid
+      E->>F: Mark candidate bank valid, atomically update boot-select metadata
+      E->>D: Trigger activation reset (ECUReset-equivalent)
+      D->>D: DMSC BootROM then System Firmware/TIFS verify candidate bank (cert + eFuse SWREV check)
+      alt Boot verification fails
+        D-->>F: Revert boot-select metadata to previous known-good bank
+        D->>L: Log activation failure + automatic rollback
+      else Boot verification passes
+        D-->>E: Boot success on new image
+        E->>L: Log campaign success (campaign ID, SWREV, timestamp)
+        E->>G: Success evidence
+        G->>C: Campaign outcome report
+      end
+    end
   end
 ```
 
 ### 4.2 Behavioral requirement focus
-- Secure transport + artifact signing are both mandatory (CSR-OTA-1, CSR-OTA-2, FCR-OTA-1)
-- Activation always re-enters secure boot and rollback policy (TCR-OTA-3)
-- Every transition is logged for campaign traceability (CSR-OTA-5, TCR-OTA-4)
+- Mutual-TLS transport and manifest/artifact signature checks are both mandatory before any bytes are written to flash (CSR-OTA-1, CSR-OTA-2, FCR-OTA-1)
+- Candidate images are written only to the inactive A/B bank; the active bank is never touched until the candidate is fully verified (FCR-OTA-3, TCR-OTA-2)
+- Anti-downgrade is checked twice: once against the manifest SWREV before download starts, and again by System Firmware against the eFuse SWREV counter during activation (CSR-OTA-3, TCR-OTA-3)
+- Activation failure triggers an automatic bank revert, not an undefined or partially-flashed state (CSR-OTA-4)
+- Every decision point (reject, retransmit, commit, activation result) is logged with campaign correlation for fleet-level audit (CSR-OTA-5, TCR-OTA-4)
