@@ -6,7 +6,7 @@ description: 'Automotive cybersecurity requirements engineering for a TDA4VM (TI
 # Automotive Cybersecurity Requirements (TDA4VM ADAS ECU)
 
 This repo tracks cybersecurity requirements for a TDA4VM (TI Jacinto 7 / J721E) ADAS ECU across
-8 topic documents. The goal is **reality-grounded** requirements engineering for learning/interview
+9 topic documents. The goal is **reality-grounded** requirements engineering for learning/interview
 prep, not generic textbook boilerplate — always prefer a verified chip/standard fact over a
 plausible-sounding invented one.
 
@@ -22,6 +22,7 @@ plausible-sounding invented one.
 | `TDA4VM_OTA_FOTA_SOTA_Requirements.md` | Over-the-air update security |
 | `TDA4VM_Secure_Reprogramming_Requirements.md` | UDS-based flashing/reprogramming |
 | `TDA4VM_RTMD_Requirements.md` | Runtime Tamper Monitoring and Detection |
+| `TDA4VM_Secure_Storage_Requirements.md` | Secure storage of keys/credentials/secrets at rest (KEK/DKEK, keyring, extended OTP) |
 
 ## Document structure convention (every file follows this exactly)
 
@@ -45,7 +46,7 @@ Requirement ID taxonomy used consistently: **CSR** (Cybersecurity Requirement, i
 **FCR** (Functional Cybersecurity Concept) → **TCR** (Technical Cybersecurity Concept, TDA4VM-specific)
 → **SWR** (Software Requirement) / **HWR** (Hardware Requirement). Each file uses a topic suffix,
 e.g. `CSR-SA-1` (Secure Access), `CSR-JTAG-1`, `CSR-OTA-1`, `CSR-SRP-1` (reprogramming), `CSR-RTMD-1`,
-`CSR-LOG-1`, `CSR-COM-1`, and the boot doc uses bare `CSR-1`/`FCR-1`/`TCR-1`.
+`CSR-LOG-1`, `CSR-COM-1`, `CSR-STO-1` (secure storage), and the boot doc uses bare `CSR-1`/`FCR-1`/`TCR-1`.
 
 **Rule:** Section 1.3 must always spell out full requirement text under `**CSR**`/`**FCR**`/`**TCR**`
 bold subheadings — never collapse to an ID range like "CSR-SA-1 to CSR-SA-5".
@@ -90,6 +91,46 @@ bold subheadings — never collapse to an ID range like "CSR-SA-1 to CSR-SA-5".
   pins (used by CCS `dbgauth`), depending on whether the host already has message-channel access.
   Board config controls: `allow_jtag_unlock`, `allow_wildcard_unlock`, `min_cert_rev`,
   `jtag_unlock_hosts`. The M3/DMSC JTAG path can never be software-opened on HS-FS/HS-SE.
+
+## Secure storage primitives (KEK/DKEK, keyring, extended OTP) — verified TISCI facts
+
+- **KEK** (Key Encryption Key): a randomly generated 256-bit key burned into eFuse at TI factory on
+  HS devices, unique per device, not correlated across devices, and never retained in any TI
+  database/tester. Reachable only via the DMSC AES engine's register interface (no DMA path) —
+  it is never exposed to software directly.
+- **DKEK** (Derived KEK): host requests a key derived from KEK using CMAC as a PRF in counter mode
+  (NIST SP 800-108 §5.1) over a `label` + `context` (combined ≤ 41 bytes, limited by the TISCI
+  secure message header) plus the requesting host's ID folded in by System Firmware — so each host
+  gets a distinct derived key. Deterministic per device/host/label/context (same inputs → same key
+  across reboots on one device), but differs across devices since the underlying KEK differs.
+  Two delivery approaches: **Approach 1** — `TISCI_MSG_CRYPTO_SET_DKEK` programs the DKEK straight
+  into SA2UL DKEK registers (never exposed outside SA2UL), gated by a SA2UL DKEK PrivID register
+  matching only the requesting host, used via the `USE_DKEK` security-context flag, released via
+  `TISCI_MSG_CRYPTO_RELEASE_DKEK`; **Approach 2** — `TISCI_MSG_CRYPTO_GET_DKEK` returns the raw DKEK
+  value to the host, who must firewall it themselves (usable via SA2UL or CPU). TI recommends
+  Approach 1 wherever possible. Caveat: PrivID gating ignores secure/non-secure and
+  privileged/user attributes, so secure and non-secure code sharing a core (and PrivID) could both
+  reach a still-programmed DKEK unless it's released promptly.
+- **Symmetric/public keyring**: a bulk, one-time-importable set of up to 6 asymmetric (RSA-4096/
+  RSA-3072 hash) + 6 symmetric (AES-256 only) auxiliary keys, imported via
+  `TISCI_MSG_KEYRING_IMPORT` as a blob signed with the active SMPK/BMPK (symmetric keys additionally
+  must be encrypted with SMEK/BMEK — import fails otherwise). Each key gets a `key_id` (1-254) and,
+  for symmetric keys, a `key_rights` bitmask (`image_enc_dec` / `CSP_decrypt` / `HKDF`) restricting
+  which operations it may be used for. Public/symmetric/combined keyring import is strictly one-time
+  — any later re-import attempt fails, by design (no silent key replacement).
+- **Cryptographic Services (CSP)**: TIFS API to encrypt/decrypt a data blob via AES-ECB/CBC/GCM.
+  Caller supplies a context struct (`revision`, `mode`, `key_size`, `key_id`, `iv`, `tag`, ...):
+  if `key_id` is non-zero it references an already-imported symmetric keyring key (key material
+  never crosses the host/firmware boundary again); if `key_id` is zero the raw key is supplied
+  in-context for one-off use. AES-GCM mode produces/verifies a 16-byte tag.
+- **Extended OTP**: a 1024-bit customer general-purpose eFuse region (distinct from the fixed-purpose
+  root-of-trust key area), organized in device-specific hardware rows (25/32/41 bits wide on
+  J721E/TDA4VM). Only one designated `write_host` (from security board config) may write; each row
+  can be marked secure (raw value withheld from TISCI read responses, usable only to set up
+  crypto contexts) or non-secure (readable in the clear by the owning host). Writes are row-masked
+  (`TISCI_MSG_WRITE_OTP_ROW`); locking is either a **soft** global lock
+  (`TISCI_MSG_SOFT_LOCK_OTP_WRITE_GLOBAL`, blocks all further writes until next reset) or a
+  **permanent** per-row lock (`TISCI_MSG_LOCK_OTP_ROW`, survives resets forever).
 
 ## Automotive standards vocabulary used for nuance/realism
 
@@ -175,6 +216,8 @@ from memory. All links below were confirmed reachable.
 - Ch.6 Topic Guide — Key Writer: https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/key_writer.html
 - Ch.6 Topic Guide — Using OpenSSL for certificate creation (X.509 cert structure/signing in practice): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/openssl_usage.html
 - Ch.6 Topic Guide — Cryptographic Services (SA2UL-backed crypto ops exposed via TISCI): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/csp.html
+- Ch.6 Topic Guide — Keyring Management (public/symmetric auxiliary keyring import): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/keyring.html
+- Ch.6 Topic Guide — Using Derived KEK on HS devices (DKEK derivation/usage): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/dkek_management.html
 - Ch.6 Topic Guide — RSASSA-PSS Signature Algorithm: https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/signature_algos.html
 - Ch.6 Topic Guide — Firewall FAQ (SA2UL/peripheral firewall access control via TISCI): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/firewall_faq.html
 - Ch.6 Topic Guide — Mailbox IPC (host-to-DMSC transport underlying TISCI messages): https://software-dl.ti.com/tisci/esd/latest/6_topic_user_guides/mailbox_ipc.html
