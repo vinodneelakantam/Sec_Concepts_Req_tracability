@@ -1,5 +1,8 @@
 # TDA4VM ADAS ECU Cybersecurity Requirements
 
+🔗 **[Browse the live site](https://vinodneelakantam.github.io/Sec_Concepts_Req_tracability/)**
+(rendered docs with navigation and Mermaid diagrams, published via GitHub Pages from `main`).
+
 This repository is a collection of automotive cybersecurity requirements documents for a
 TDA4VM (TI Jacinto 7 / J721E) ADAS ECU. It exists as a learning and interview-preparation
 resource for grounding automotive cybersecurity concepts in real hardware/firmware facts
