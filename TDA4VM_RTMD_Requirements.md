@@ -121,7 +121,15 @@ graph LR
 
 ### 5.3 Runtime tamper detection sequence
 
-```mermaid
+<p align="center">
+  <a href="{{ '/assets/diagrams/TDA4VM_RTMD_Requirements-sequence.png' | relative_url }}" target="_blank" rel="noopener">
+    <img src="{{ '/assets/diagrams/TDA4VM_RTMD_Requirements-sequence.png' | relative_url }}" alt="Runtime tamper detection sequence" style="max-width:100%;">
+  </a>
+</p>
+<details markdown="1">
+<summary>Mermaid source (for editing/regeneration)</summary>
+
+```mermaid-source
 sequenceDiagram
   participant S as RTMD Scheduler (periodic tick + event triggers)
   participant C as Integrity Checker (R5F/A72 task)
@@ -157,6 +165,9 @@ sequenceDiagram
     end
   end
 ```
+
+</details>
+
 
 ### 5.4 Behavioral requirement focus
 - Monitoring runs on both a scheduled cadence and discrete triggers (reset-reason register, TIFS debug-state change notification, repeated SecurityAccess failures) rather than a single polling loop (CSR-RTMD-4, TSC-RTMD-1)

@@ -120,7 +120,15 @@ graph LR
 
 ### 5.3 Secure access challenge-response flow (ISO 14229-1 SecurityAccess, service 0x27)
 
-```mermaid
+<p align="center">
+  <a href="{{ '/assets/diagrams/TDA4VM_SecureAccess_Requirements-sequence.png' | relative_url }}" target="_blank" rel="noopener">
+    <img src="{{ '/assets/diagrams/TDA4VM_SecureAccess_Requirements-sequence.png' | relative_url }}" alt="Secure access challenge-response flow (ISO 14229-1 SecurityAccess, service 0x27)" style="max-width:100%;">
+  </a>
+</p>
+<details markdown="1">
+<summary>Mermaid source (for editing/regeneration)</summary>
+
+```mermaid-source
 sequenceDiagram
   participant T as Tester
   participant D as DCM (UDS stack)
@@ -159,6 +167,9 @@ sequenceDiagram
     end
   end
 ```
+
+</details>
+
 
 ### 5.4 Behavioral requirement focus
 - Access is deny-by-default: no protected service gate opens until a `sendKey` verification succeeds for the matching session and level (CSR-SA-1, TSC-SA-2)

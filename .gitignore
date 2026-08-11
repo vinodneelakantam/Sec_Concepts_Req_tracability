@@ -1,1 +1,3 @@
 .vscode/
+tools/mermaid-render/node_modules/
+tools/mermaid-render/.tmp/

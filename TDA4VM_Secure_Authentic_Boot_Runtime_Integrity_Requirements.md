@@ -146,7 +146,15 @@ graph LR
 
 ### 5.3 Secure boot and runtime integrity sequence
 
-```mermaid
+<p align="center">
+  <a href="{{ '/assets/diagrams/TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements-sequence.png' | relative_url }}" target="_blank" rel="noopener">
+    <img src="{{ '/assets/diagrams/TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements-sequence.png' | relative_url }}" alt="Secure boot and runtime integrity sequence" style="max-width:100%;">
+  </a>
+</p>
+<details markdown="1">
+<summary>Mermaid source (for editing/regeneration)</summary>
+
+```mermaid-source
 sequenceDiagram
   participant ROM as DMSC BootROM (immutable)
   participant SF as System Firmware / TIFS
@@ -185,6 +193,9 @@ sequenceDiagram
     end
   end
 ```
+
+</details>
+
 
 ### 5.4 Behavioral requirement focus
 - No bypass path: BootROM authentication of System Firmware runs on every power-on/reset with no

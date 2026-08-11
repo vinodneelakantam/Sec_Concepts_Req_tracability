@@ -123,7 +123,15 @@ graph LR
 
 ### 5.3 OTA secure update sequence
 
-```mermaid
+<p align="center">
+  <a href="{{ '/assets/diagrams/TDA4VM_OTA_FOTA_SOTA_Requirements-sequence.png' | relative_url }}" target="_blank" rel="noopener">
+    <img src="{{ '/assets/diagrams/TDA4VM_OTA_FOTA_SOTA_Requirements-sequence.png' | relative_url }}" alt="OTA secure update sequence" style="max-width:100%;">
+  </a>
+</p>
+<details markdown="1">
+<summary>Mermaid source (for editing/regeneration)</summary>
+
+```mermaid-source
 sequenceDiagram
   participant C as Cloud Backend (campaign/signing authority)
   participant G as Gateway (mTLS terminator)
@@ -173,6 +181,9 @@ sequenceDiagram
     end
   end
 ```
+
+</details>
+
 
 ### 5.4 Behavioral requirement focus
 - Mutual-TLS transport and manifest/artifact signature checks are both mandatory before any bytes are written to flash (CSR-OTA-1, CSR-OTA-2, TSC-OTA-1)

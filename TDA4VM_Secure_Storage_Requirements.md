@@ -141,7 +141,15 @@ graph LR
 
 ### 5.3 Secure storage provisioning and runtime store/retrieve sequence
 
-```mermaid
+<p align="center">
+  <a href="{{ '/assets/diagrams/TDA4VM_Secure_Storage_Requirements-sequence.png' | relative_url }}" target="_blank" rel="noopener">
+    <img src="{{ '/assets/diagrams/TDA4VM_Secure_Storage_Requirements-sequence.png' | relative_url }}" alt="Secure storage provisioning and runtime store/retrieve sequence" style="max-width:100%;">
+  </a>
+</p>
+<details markdown="1">
+<summary>Mermaid source (for editing/regeneration)</summary>
+
+```mermaid-source
 sequenceDiagram
   participant Mfg as Manufacturing/Service Tool
   participant SSM as Secure Storage Manager
@@ -190,6 +198,9 @@ sequenceDiagram
     SSM-->>App: Secret delivered
   end
 ```
+
+</details>
+
 
 ### 5.4 Behavioral requirement focus
 - The symmetric keyring can only be imported once; any later `TISCI_MSG_KEYRING_IMPORT` attempt is rejected outright, which is what makes provisioning auditable and non-repeatable rather than a silently overwritable operation (CSR-STO-5, TSC-STO-4)

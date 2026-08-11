@@ -145,7 +145,15 @@ graph LR
 
 ### 5.3 Secure debug unlock sequence
 
-```mermaid
+<p align="center">
+  <a href="{{ '/assets/diagrams/TDA4VM_Secure_JTAG_Requirements-sequence.png' | relative_url }}" target="_blank" rel="noopener">
+    <img src="{{ '/assets/diagrams/TDA4VM_Secure_JTAG_Requirements-sequence.png' | relative_url }}" alt="Secure debug unlock sequence" style="max-width:100%;">
+  </a>
+</p>
+<details markdown="1">
+<summary>Mermaid source (for editing/regeneration)</summary>
+
+```mermaid-source
 sequenceDiagram
   participant T as Debug Tool (dbgauth/TISCI host)
   participant S as Sec-AP / TISCI transport
@@ -177,6 +185,9 @@ sequenceDiagram
     end
   end
 ```
+
+</details>
+
 
 ### 5.4 Behavioral requirement focus
 - Debug unlock is always certificate-based (X.509, RSA-signed), never a static password or

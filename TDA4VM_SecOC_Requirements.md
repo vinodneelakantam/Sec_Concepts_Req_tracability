@@ -182,7 +182,15 @@ graph LR
 
 ### 5.3 SecOC-protected Authentic PDU authentication and freshness verification flow, plus confidentiality/off-board paths
 
-```mermaid
+<p align="center">
+  <a href="{{ '/assets/diagrams/TDA4VM_SecOC_Requirements-sequence.png' | relative_url }}" target="_blank" rel="noopener">
+    <img src="{{ '/assets/diagrams/TDA4VM_SecOC_Requirements-sequence.png' | relative_url }}" alt="SecOC-protected Authentic PDU authentication and freshness verification flow, plus confidentiality/off-board paths" style="max-width:100%;">
+  </a>
+</p>
+<details markdown="1">
+<summary>Mermaid source (for editing/regeneration)</summary>
+
+```mermaid-source
 sequenceDiagram
   participant App as Sender Application
   participant Tx as SecOC TX Module
@@ -234,6 +242,9 @@ sequenceDiagram
   OB->>OB: TLS 1.2+/mTLS session using eFuse-anchored device X.509 identity
   OB->>L: Session establishment/failure logged separately from in-vehicle paths
 ```
+
+</details>
+
 
 ### 5.4 Behavioral requirement focus
 - SecOC frames carry a truncated freshness value plus an AES-128-CMAC-class MAC computed via SA2UL, bound to the PDU's Data ID (CSR-SECOC-1, CSR-SECOC-3, TSR-SECOC-1)

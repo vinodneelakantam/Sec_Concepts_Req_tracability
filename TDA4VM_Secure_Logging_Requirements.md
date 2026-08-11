@@ -119,7 +119,15 @@ graph LR
 
 ### 5.3 Secure event logging and export sequence
 
-```mermaid
+<p align="center">
+  <a href="{{ '/assets/diagrams/TDA4VM_Secure_Logging_Requirements-sequence.png' | relative_url }}" target="_blank" rel="noopener">
+    <img src="{{ '/assets/diagrams/TDA4VM_Secure_Logging_Requirements-sequence.png' | relative_url }}" alt="Secure event logging and export sequence" style="max-width:100%;">
+  </a>
+</p>
+<details markdown="1">
+<summary>Mermaid source (for editing/regeneration)</summary>
+
+```mermaid-source
 sequenceDiagram
   participant P as Security Producer (boot/JTAG/comm/OTA/RTMD/SecurityAccess)
   participant M as Log Manager
@@ -154,6 +162,9 @@ sequenceDiagram
     end
   end
 ```
+
+</details>
+
 
 ### 5.4 Behavioral requirement focus
 - Every record is chained to the previous one via an SA2UL-generated HMAC, so a gap or edit breaks the chain and is independently detectable by the backend, not just the local device (CSR-LOG-1, TSC-LOG-1)

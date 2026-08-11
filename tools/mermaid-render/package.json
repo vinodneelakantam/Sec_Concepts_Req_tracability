@@ -1,0 +1,9 @@
+{
+  "name": "mermaid-render",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local tooling to pre-render Mermaid sequence diagrams to high-res PNGs for GitHub Pages.",
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^10.9.1"
+  }
+}

@@ -120,7 +120,15 @@ graph LR
 
 ### 5.3 Secure reprogramming sequence (ISO 14229-1 UDS flashing flow)
 
-```mermaid
+<p align="center">
+  <a href="{{ '/assets/diagrams/TDA4VM_Secure_Reprogramming_Requirements-sequence.png' | relative_url }}" target="_blank" rel="noopener">
+    <img src="{{ '/assets/diagrams/TDA4VM_Secure_Reprogramming_Requirements-sequence.png' | relative_url }}" alt="Secure reprogramming sequence (ISO 14229-1 UDS flashing flow)" style="max-width:100%;">
+  </a>
+</p>
+<details markdown="1">
+<summary>Mermaid source (for editing/regeneration)</summary>
+
+```mermaid-source
 sequenceDiagram
   participant Tl as Tool (Tester/OTA backend)
   participant D as DCM (UDS stack)
@@ -169,6 +177,9 @@ sequenceDiagram
     end
   end
 ```
+
+</details>
+
 
 ### 5.4 Behavioral requirement focus
 - Reprogramming follows the standard UDS staged workflow - session control, SecurityAccess, erase/precondition check, block-wise download, transfer exit, dependency check, then reset-triggered activation - with an explicit commit decision at each gate (TSC-SRP-1, TSC-SRP-2)
