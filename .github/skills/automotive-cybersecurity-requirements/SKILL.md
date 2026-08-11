@@ -6,7 +6,7 @@ description: 'Automotive cybersecurity requirements engineering for a TDA4VM (TI
 # Automotive Cybersecurity Requirements (TDA4VM ADAS ECU)
 
 This repo tracks cybersecurity requirements for a TDA4VM (TI Jacinto 7 / J721E) ADAS ECU across
-11 topic documents. The goal is **reality-grounded** requirements engineering for learning/interview
+10 topic documents. The goal is **reality-grounded** requirements engineering for learning/interview
 prep, not generic textbook boilerplate — always prefer a verified chip/standard fact over a
 plausible-sounding invented one.
 
@@ -17,8 +17,7 @@ plausible-sounding invented one.
 | `TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md` | Secure/authentic boot chain + runtime integrity (most safety/security-critical doc) |
 | `TDA4VM_Secure_JTAG_Requirements.md` | Debug/JTAG access control |
 | `TDA4VM_SecureAccess_Requirements.md` | UDS SecurityAccess (diagnostic protected services) |
-| `TDA4VM_Secure_Communication_Requirements.md` | Confidentiality-protected channels, shared key/policy management, off-board (cloud/backend) comms |
-| `TDA4VM_SecOC_Requirements.md` | AUTOSAR SecOC — per-PDU in-vehicle authenticity/freshness protection (Data ID, MAC, Freshness Value Manager) |
+| `TDA4VM_SecOC_Requirements.md` | Full secure communication stack: AUTOSAR SecOC per-PDU authenticity/freshness (Data ID, MAC, Freshness Value Manager), confidentiality-protected channels (SA2UL AES-GCM), off-board TLS/mTLS, shared key/session management |
 | `TDA4VM_Secure_Logging_Requirements.md` | Tamper-evident security event logging |
 | `TDA4VM_OTA_FOTA_SOTA_Requirements.md` | Over-the-air update security |
 | `TDA4VM_Secure_Reprogramming_Requirements.md` | UDS-based flashing/reprogramming |
@@ -67,19 +66,27 @@ TDA4VM-specific — renamed from the older TCR/"Technical Cybersecurity Concept"
 (Hardware Requirement) / **SWR** (Software Requirement) → **HSI** (Hardware-Software Interface
 Requirement, register/API/message-level contract between the hardware in Section 4 and the
 software in Section 5). Each file uses a topic suffix, e.g. `CSR-SA-1` (Secure Access), `CSR-JTAG-1`,
-`CSR-OTA-1`, `CSR-SRP-1` (reprogramming), `CSR-RTMD-1`, `CSR-LOG-1`, `CSR-COM-1`, `CSR-STO-1`
-(secure storage), `CSR-SECOC-1` (AUTOSAR SecOC per-PDU authenticity/freshness),
+`CSR-OTA-1`, `CSR-SRP-1` (reprogramming), `CSR-RTMD-1`, `CSR-LOG-1`, `CSR-STO-1`
+(secure storage), `CSR-SECOC-1` (secure communication, incl. AUTOSAR SecOC per-PDU
+authenticity/freshness plus confidentiality/off-board channels),
 `CSR-VULN-1` (vulnerability analysis/management), with matching
 `FSC-<suffix>-n`/`FSR-<suffix>-n`/`SYSR-<suffix>-n`/
 `TSC-<suffix>-n`/`TSR-<suffix>-n`/`HSI-<suffix>-n` IDs, and the boot doc uses bare
 `CSR-1`/`FSC-1`/`FSR-1`/`SYSR-1`/`TSC-1`/`TSR-1`/`HSI-1`.
+
+**Note on `TDA4VM_SecOC_Requirements.md`**: this doc was originally split from a separate
+`TDA4VM_Secure_Communication_Requirements.md`, then merged back into one file (all under the
+`SECOC` suffix) once it became clear the confidentiality/off-board/key-management content left
+behind in the split-off COM doc was not substantial enough to justify two files. It now covers the
+full secure communication stack: AUTOSAR SecOC per-PDU authenticity/freshness, confidentiality-
+protected channels (SA2UL AES-GCM), off-board TLS/mTLS sessions, and shared key/session management.
 
 **Note on `TDA4VM_Vulnerability_Analysis_Requirements.md`**: this doc is deliberately process-
 oriented rather than mechanism-oriented (an ISO 21434 continuous cybersecurity activity, not an
 ECU runtime security stack). Its own "Hardware elements" (4.1) are the asset/fingerprinting surface
 it analyzes (`TISCI_MSG_GET_SOC_UID`, eFuse SWREV/KEYREV, the full HW inventory from the other
 docs), not a new crypto engine, and its Section 5 tooling produces risk-treatment decisions that
-cite CSR/TSR IDs in the other 10 docs rather than defining a new always-running security control.
+cite CSR/TSR IDs in the other docs rather than defining a new always-running security control.
 Still follow the same 6-section shape and ID taxonomy — don't skip sections just because the topic
 is process-oriented.
 
@@ -192,9 +199,9 @@ the system-entity/trust-boundary view in 2.2 and the software-module view in 5.1
   primitive ↔ PduR ↔ CanIf/EthIf lower layer. **Data ID** binds the MAC to a specific PDU's identity
   so a valid MAC for one PDU can't be replayed as another. See `TDA4VM_SecOC_Requirements.md` for
   the dedicated TDA4VM-grounded treatment (SA2UL as the MAC engine, key handles from the shared
-  Key/Session Manager, NvM/register-backed freshness counter surviving reset) — the
-  `TDA4VM_Secure_Communication_Requirements.md` doc covers confidentiality channels, shared
-  key/policy management, and off-board sessions instead, not the SecOC mechanism itself.
+  Key/Session Manager, NvM/register-backed freshness counter surviving reset) — that same doc also
+  covers confidentiality-protected channels (SA2UL AES-GCM) and off-board TLS/mTLS sessions, since
+  splitting those into a separate file left too little unique content to justify two docs.
 - **ISO 21434**: source of the CSR/FSC-FSR/TSC-TSR concept-layer vocabulary (item-level
   cybersecurity requirement → functional concept → technical concept).
 - Dual-bank (A/B) flash pattern for OTA/reprogramming: candidate writes only ever touch the inactive

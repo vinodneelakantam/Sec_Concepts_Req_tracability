@@ -48,8 +48,7 @@ Topics currently covered:
 | [TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md](TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md) | Secure/authentic boot and runtime integrity |
 | [TDA4VM_Secure_JTAG_Requirements.md](TDA4VM_Secure_JTAG_Requirements.md) | JTAG/debug port access control |
 | [TDA4VM_SecureAccess_Requirements.md](TDA4VM_SecureAccess_Requirements.md) | UDS SecurityAccess (diagnostic access control) |
-| [TDA4VM_Secure_Communication_Requirements.md](TDA4VM_Secure_Communication_Requirements.md) | Confidentiality-protected channels, key/policy management, off-board comms |
-| [TDA4VM_SecOC_Requirements.md](TDA4VM_SecOC_Requirements.md) | AUTOSAR SecOC - per-PDU in-vehicle authenticity/freshness protection |
+| [TDA4VM_SecOC_Requirements.md](TDA4VM_SecOC_Requirements.md) | Secure communication stack: AUTOSAR SecOC per-PDU authenticity/freshness, confidentiality channels, off-board TLS |
 | [TDA4VM_Secure_Logging_Requirements.md](TDA4VM_Secure_Logging_Requirements.md) | Secure/tamper-evident logging |
 | [TDA4VM_OTA_FOTA_SOTA_Requirements.md](TDA4VM_OTA_FOTA_SOTA_Requirements.md) | OTA/FOTA/SOTA update delivery |
 | [TDA4VM_Secure_Reprogramming_Requirements.md](TDA4VM_Secure_Reprogramming_Requirements.md) | Secure ECU reprogramming |

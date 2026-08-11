@@ -25,8 +25,7 @@ CSR/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
 | [Secure and Authentic Boot with Runtime Integrity]({{ "/TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.html" | relative_url }}) | Secure/authentic boot and runtime integrity |
 | [Secure JTAG and Debug Control]({{ "/TDA4VM_Secure_JTAG_Requirements.html" | relative_url }}) | JTAG/debug port access control |
 | [Secure Access]({{ "/TDA4VM_SecureAccess_Requirements.html" | relative_url }}) | UDS SecurityAccess (diagnostic access control) |
-| [Secure Communication]({{ "/TDA4VM_Secure_Communication_Requirements.html" | relative_url }}) | Confidentiality-protected channels, key/policy management, off-board comms |
-| [SecOC]({{ "/TDA4VM_SecOC_Requirements.html" | relative_url }}) | AUTOSAR SecOC - per-PDU in-vehicle authenticity/freshness protection |
+| [SecOC]({{ "/TDA4VM_SecOC_Requirements.html" | relative_url }}) | Secure communication stack: AUTOSAR SecOC per-PDU authenticity/freshness, confidentiality channels, off-board TLS |
 | [Secure Logging]({{ "/TDA4VM_Secure_Logging_Requirements.html" | relative_url }}) | Secure/tamper-evident logging |
 | [OTA/FOTA/SOTA]({{ "/TDA4VM_OTA_FOTA_SOTA_Requirements.html" | relative_url }}) | OTA/FOTA/SOTA update delivery |
 | [Secure Reprogramming]({{ "/TDA4VM_Secure_Reprogramming_Requirements.html" | relative_url }}) | Secure ECU reprogramming |
