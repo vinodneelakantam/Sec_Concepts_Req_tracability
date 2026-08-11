@@ -6,16 +6,37 @@
 > System Firmware, and unlock can be delivered either via a TISCI message or via the Secure Access
 > Point (Sec-AP) over the JTAG pins itself.
 
-## 1. System Static Architecture
+## 1. Functional Security Concept
 
-### 1.1 System entities
+### 1.1 Cybersecurity Requirements (CSR)
+- CSR-JTAG-1: Debug unlock shall require cryptographic authorization, not static passwords.
+- CSR-JTAG-2: Production lifecycle state shall keep JTAG closed by default per device security type - HS-SE closes all cores by default; HS-FS closes only the M3/DMSC core by default and relies on OEM board configuration/provisioning to lock the remaining cores.
+- CSR-JTAG-3: Debug unlock attempts and debug state transitions shall be logged with integrity protection.
+- CSR-JTAG-4: Debug privileges shall be bounded by explicit per-certificate core scope and privilege level.
+- CSR-JTAG-5: Debug certificates shall enforce a minimum certificate revision (`min_cert_rev`) to prevent replay of older unlock certificates.
+
+### 1.2 Functional Security Concept (FSC)
+- FSC-JTAG-1: Require cryptographic proof of authorization for any debug capability, replacing static or shared secrets entirely.
+- FSC-JTAG-2: Default to closed debug access in production, opening only the minimum scope and privilege actually requested and justified.
+- FSC-JTAG-3: Make every debug-state transition an auditable, integrity-protected event.
+
+### 1.3 Functional Security Requirements (FSR)
+- FSR-JTAG-1: A debug session shall not be granted unless a valid, cryptographically verifiable authorization credential is presented for that request.
+- FSR-JTAG-2: In production lifecycle state, debug interfaces shall remain closed until explicitly and validly unlocked, consistent with the device's configured security posture.
+- FSR-JTAG-3: A debug credential shall grant access only to the specific cores and privilege level it explicitly encodes, never a broader scope.
+- FSR-JTAG-4: Debug unlock attempts, successes, failures, and resulting state changes shall be recorded with integrity protection.
+- FSR-JTAG-5: A debug credential older than the currently enforced minimum revision shall be rejected, preventing reuse of a superseded authorization.
+
+## 2. System Requirements and System Static Architecture
+
+### 2.1 System entities
 - Authorized service/debug tool (e.g., CCS with `dbgauth`, or a TISCI-capable host)
 - Vehicle gateway or direct service interface
 - TDA4VM System Firmware (SYSFW/TIFS running on DMSC) acting as debug authorization authority
 - Device security configuration (efuse-programmed GP / HS-FS / HS-SE type, board configuration)
 - Secure logging and backend audit systems
 
-### 1.2 Trust boundaries and interfaces
+### 2.2 Trust boundaries and interfaces
 - Boundary A: Debug tool to Secure Access Point (Sec-AP) or TISCI message interface
 - Boundary B: System Firmware certificate validation to physical JTAG unlock action
 - Boundary C: eFuse/board-configuration policy to runtime unlock decision (`allow_jtag_unlock`,
@@ -31,42 +52,28 @@ graph LR
   Log --> Backend[Audit Backend]
 ```
 
-### 1.3 System-level requirement allocation
+### 2.3 System Requirements (SYSR)
+- SYSR-JTAG-1: The debug tool domain shall interact with System Firmware only via the Sec-AP or TISCI message boundary (Boundary A), never via a direct, unauthenticated JTAG register path.
+- SYSR-JTAG-2: The eFuse/board-configuration policy domain (Boundary C) shall be the single system-wide source of `allow_jtag_unlock`/`allow_wildcard_unlock`/`min_cert_rev`/`jtag_unlock_hosts`, consumed identically regardless of delivery path (message vs Sec-AP).
+- SYSR-JTAG-3: Debug state transitions crossing Boundary D into secure logging shall be delivered even when the unlock request itself is denied.
 
-**Cybersecurity Requirements (CSR)**
-- CSR-JTAG-1: Debug unlock shall require cryptographic authorization, not static passwords.
-- CSR-JTAG-2: Production lifecycle state shall keep JTAG closed by default per device security type - HS-SE closes all cores by default; HS-FS closes only the M3/DMSC core by default and relies on OEM board configuration/provisioning to lock the remaining cores.
-- CSR-JTAG-3: Debug unlock attempts and debug state transitions shall be logged with integrity protection.
-- CSR-JTAG-4: Debug privileges shall be bounded by explicit per-certificate core scope and privilege level.
-- CSR-JTAG-5: Debug certificates shall enforce a minimum certificate revision (`min_cert_rev`) to prevent replay of older unlock certificates.
+## 3. Technical Security Concept
 
-**Functional Security Concept (FSC)**
-- FSC-JTAG-1: Require cryptographic proof of authorization for any debug capability, replacing static or shared secrets entirely.
-- FSC-JTAG-2: Default to closed debug access in production, opening only the minimum scope and privilege actually requested and justified.
-- FSC-JTAG-3: Make every debug-state transition an auditable, integrity-protected event.
+### 3.1 Technical Security Concept (TSC)
+- TSC-JTAG-1: Enforce closed-by-default debug posture per device security type in production (see HS-FS/HS-SE table in Section 4.2).
+- TSC-JTAG-2: Separate certificate signature/UID validation (authentication) from the encoded debug privilege level and core scope (authorization).
+- TSC-JTAG-3: Apply least-privilege debug profiles by encoding only the required cores/privilege level (`coreDbgEn`, `coreDbgSecEn`, `debugType`) per certificate.
+- TSC-JTAG-4: Prohibit wildcard UID unlock (`allow_wildcard_unlock`) with production signing keys; permit it only for lab/development use.
 
-**Functional Security Requirements (FSR)**
-- FSR-JTAG-1: A debug session shall not be granted unless a valid, cryptographically verifiable authorization credential is presented for that request.
-- FSR-JTAG-2: In production lifecycle state, debug interfaces shall remain closed until explicitly and validly unlocked, consistent with the device's configured security posture.
-- FSR-JTAG-3: A debug credential shall grant access only to the specific cores and privilege level it explicitly encodes, never a broader scope.
-- FSR-JTAG-4: Debug unlock attempts, successes, failures, and resulting state changes shall be recorded with integrity protection.
-- FSR-JTAG-5: A debug credential older than the currently enforced minimum revision shall be rejected, preventing reuse of a superseded authorization.
+### 3.2 Technical Security Requirements (TSR) - corrected against TI TISCI Secure Debug User Guide
+- TSR-JTAG-1: Use the device security type (GP/HS-FS/HS-SE) and System Firmware (TIFS) certificate validation to govern debug access, not a generic "lifecycle policy".
+- TSR-JTAG-2: Keep debug-unlock signing keys (SMPK/BMPK) in the OEM's offline root-of-trust key management, never in application plaintext.
+- TSR-JTAG-3: Route unlock events, validation failures, and `TISCI_MSG_DISABLE_JTAG_UNLOCK` permanent-lockout actions into secure logging.
+- TSR-JTAG-4: The M3/DMSC JTAG path can never be opened by software on HS-FS or HS-SE devices, regardless of reset path.
 
-**Functional Cybersecurity Concept (FCR)**
-- FCR-JTAG-1: Enforce closed-by-default debug posture per device security type in production (see HS-FS/HS-SE table in Section 2.2).
-- FCR-JTAG-2: Separate certificate signature/UID validation (authentication) from the encoded debug privilege level and core scope (authorization).
-- FCR-JTAG-3: Apply least-privilege debug profiles by encoding only the required cores/privilege level (`coreDbgEn`, `coreDbgSecEn`, `debugType`) per certificate.
-- FCR-JTAG-4: Prohibit wildcard UID unlock (`allow_wildcard_unlock`) with production signing keys; permit it only for lab/development use.
+## 4. Hardware Requirements and Hardware Static Architecture
 
-**Technical Cybersecurity Concept (TCR)** - corrected against TI TISCI Secure Debug User Guide
-- TCR-JTAG-1: Use the device security type (GP/HS-FS/HS-SE) and System Firmware (TIFS) certificate validation to govern debug access, not a generic "lifecycle policy".
-- TCR-JTAG-2: Keep debug-unlock signing keys (SMPK/BMPK) in the OEM's offline root-of-trust key management, never in application plaintext.
-- TCR-JTAG-3: Route unlock events, validation failures, and `TISCI_MSG_DISABLE_JTAG_UNLOCK` permanent-lockout actions into secure logging.
-- TCR-JTAG-4: The M3/DMSC JTAG path can never be opened by software on HS-FS or HS-SE devices, regardless of reset path.
-
-## 2. Hardware Static Architecture
-
-### 2.1 Hardware elements
+### 4.1 Hardware elements
 - JTAG TAP and Secure Access Point (Sec-AP): allows reading/writing System Firmware even while
   the JTAG port itself is locked
 - DMSC (Cortex-M3 running System Firmware/TIFS), which owns the debug-unlock decision
@@ -74,7 +81,7 @@ graph LR
   flag (set via `TISCI_MSG_DISABLE_JTAG_UNLOCK`)
 - Core-level debug gating for A72/R5F/DSP cores, independent from the M3/DMSC debug gate
 
-### 2.2 Hardware responsibility mapping
+### 4.2 Hardware Requirements (HWR)
 - Default JTAG state is defined per device security type, not a single fixed default:
 
 | Device type | M3/DMSC JTAG | Other core JTAG |
@@ -89,9 +96,9 @@ graph LR
 - JTAG unlock can be permanently and irreversibly disabled by blowing an efuse via
   `TISCI_MSG_DISABLE_JTAG_UNLOCK` (production end-of-life debug lockout)
 
-## 3. Software Static Architecture
+## 5. Software Requirements and Software Static & Dynamic Architecture
 
-### 3.1 Software blocks
+### 5.1 Software blocks
 - Debug certificate generator (offline, OEM-side): builds an X.509 certificate with the
   System Firmware Debug Extension (`debugUID`, `debugType`, `coreDbgEn`, `coreDbgSecEn`) and the
   System Firmware Software Revision Extension, signed with SMPK or BMPK private key
@@ -111,7 +118,7 @@ graph LR
   Val --> Log[Secure Logging]
 ```
 
-### 3.2 Software requirement allocation
+### 5.2 Software Requirements (SWR)
 - SWR-JTAG-1: No raw/unauthenticated JTAG enable path exists in production firmware
 - SWR-JTAG-2: Validate signature, certificate revision (`min_cert_rev`), SoC UID (unless
   wildcard allowed for non-production use only), and requested debug scope before unlock
@@ -120,9 +127,7 @@ graph LR
 - SWR-JTAG-4: Emit a security event for unlock success, validation failure, and any
   `TISCI_MSG_DISABLE_JTAG_UNLOCK` permanent-lockout action
 
-## 4. Dynamic / Behavioral Views
-
-### 4.1 Secure debug unlock sequence
+### 5.3 Secure debug unlock sequence
 
 ```mermaid
 sequenceDiagram
@@ -157,18 +162,31 @@ sequenceDiagram
   end
 ```
 
-### 4.2 Behavioral requirement focus
+### 5.4 Behavioral requirement focus
 - Debug unlock is always certificate-based (X.509, RSA-signed), never a static password or
   shared secret (CSR-JTAG-1)
 - The permanent efuse disable flag (set via `TISCI_MSG_DISABLE_JTAG_UNLOCK`) is checked before any
-  certificate validation - once blown, no certificate can re-open debug access (CSR-JTAG-2, TCR-JTAG-3)
+  certificate validation - once blown, no certificate can re-open debug access (CSR-JTAG-2, TSR-JTAG-3)
 - HS-SE production devices are closed-by-default for all cores; HS-FS devices are closed only
   for the M3/DMSC core by default — the OEM's own board configuration and provisioning must
-  close the remaining cores for a production posture (CSR-JTAG-2, FCR-JTAG-1)
+  close the remaining cores for a production posture (CSR-JTAG-2, TSC-JTAG-1)
 - Delivery uses either the `TISCI_MSG_OPEN_DEBUG_FWLS` message channel or a Sec-AP transfer directly
   over the JTAG pins, depending on whether the host already has message-channel access or only a
-  physical debug port to a closed device (FCR-JTAG-2)
+  physical debug port to a closed device (TSC-JTAG-2)
 - Debug scope (which cores, which privilege level) is explicitly encoded per-certificate via
-  `coreDbgEn`/`coreDbgSecEn`/`debugType`, giving least-privilege debug profiles (FCR-JTAG-3)
+  `coreDbgEn`/`coreDbgSecEn`/`debugType`, giving least-privilege debug profiles (TSC-JTAG-3)
 - Every unlock attempt, success, or failure is logged; JTAG can be permanently disabled via
-  efuse for end-of-life production lockout (CSR-JTAG-3, TCR-JTAG-3)
+  efuse for end-of-life production lockout (CSR-JTAG-3, TSR-JTAG-3)
+
+## 6. Hardware-Software Interface (HSI)
+
+### 6.1 HSI elements
+- Sec-AP register/transfer interface over JTAG pins
+- `TISCI_MSG_OPEN_DEBUG_FWLS` message interface
+- JTAG/debug core-enable register bank (`coreDbgEn`/`coreDbgSecEn`)
+- eFuse JTAG-permanently-disabled flag register
+
+### 6.2 HSI Requirements (HSI)
+- HSI-JTAG-1: The Sec-AP register interface shall expose only certificate-transfer and status-read operations to the debug tool, never a raw core-enable register write.
+- HSI-JTAG-2: The physical JTAG core-enable registers shall be writable only by System Firmware following certificate validation, not directly addressable by the debug tool over either delivery path.
+- HSI-JTAG-3: The eFuse JTAG-permanently-disabled flag shall be exposed to System Firmware as a read-only hardware signal that unconditionally gates the core-enable register interface, independent of any certificate validation result.

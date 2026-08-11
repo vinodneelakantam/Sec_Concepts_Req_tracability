@@ -1,6 +1,6 @@
 ---
 name: automotive-cybersecurity-requirements
-description: 'Automotive cybersecurity requirements engineering for a TDA4VM (TI Jacinto 7 / J721E) ADAS ECU: secure boot, JTAG/debug, secure access (UDS SecurityAccess), secure communication (SecOC), secure logging, OTA/FOTA/SOTA, secure reprogramming, and runtime tamper monitoring. Use when writing, reviewing, or extending CSR/FCR/TCR/SWR/HWR requirement documents in this repo, grounding technical claims in real TI TDA4VM/TISCI facts instead of generic assumptions, drawing on ISO 21434 / ISO 14229 / AUTOSAR SecOC concepts, or authoring/validating Mermaid architecture and sequence diagrams for these documents.'
+description: 'Automotive cybersecurity requirements engineering for a TDA4VM (TI Jacinto 7 / J721E) ADAS ECU: secure boot, JTAG/debug, secure access (UDS SecurityAccess), secure communication (SecOC), secure logging, OTA/FOTA/SOTA, secure reprogramming, and runtime tamper monitoring. Use when writing, reviewing, or extending CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI requirement documents in this repo, grounding technical claims in real TI TDA4VM/TISCI facts instead of generic assumptions, drawing on ISO 21434 / ISO 14229 / AUTOSAR SecOC concepts, or authoring/validating Mermaid architecture and sequence diagrams for these documents.'
 ---
 
 # Automotive Cybersecurity Requirements (TDA4VM ADAS ECU)
@@ -26,35 +26,55 @@ plausible-sounding invented one.
 
 ## Document structure convention (every file follows this exactly)
 
+The structure mirrors an end-to-end concept-to-interface flow: **FSC (→FSR) → System Requirements
++ System Static Architecture → TSC (→TSR) → Hardware Requirements + Hardware Static Architecture →
+Software Requirements + Software Static & Dynamic Architecture → HSI**.
+
 ```
-## 1. System Static Architecture
-### 1.1 System entities
-### 1.2 Trust boundaries and interfaces   (+ mermaid `graph LR`)
-### 1.3 System-level requirement allocation  <- full CSR/FSC/FSR/FCR/TCR text, NOT bare "ID-1 to ID-5" ranges
-## 2. Hardware Static Architecture
-### 2.1 Hardware elements
-### 2.2 Hardware responsibility mapping
-## 3. Software Static Architecture
-### 3.1 Software blocks   (+ mermaid `graph LR`)
-### 3.2 Software requirement allocation
-## 4. Dynamic / Behavioral Views
-### 4.1 [sequence name]   (+ mermaid `sequenceDiagram` with explicit alt/opt failure paths)
-### 4.2 Behavioral requirement focus
+## 1. Functional Security Concept
+### 1.1 Cybersecurity Requirements (CSR)        <- full requirement text, NOT bare "ID-1 to ID-5" ranges
+### 1.2 Functional Security Concept (FSC)
+### 1.3 Functional Security Requirements (FSR)
+## 2. System Requirements and System Static Architecture
+### 2.1 System entities
+### 2.2 Trust boundaries and interfaces   (+ mermaid `graph LR`)
+### 2.3 System Requirements (SYSR)             <- new system-level allocation between FSR and TSC
+## 3. Technical Security Concept
+### 3.1 Technical Security Concept (TSC)
+### 3.2 Technical Security Requirements (TSR)
+## 4. Hardware Requirements and Hardware Static Architecture
+### 4.1 Hardware elements
+### 4.2 Hardware Requirements (HWR)
+## 5. Software Requirements and Software Static & Dynamic Architecture
+### 5.1 Software blocks   (+ mermaid `graph LR`)
+### 5.2 Software Requirements (SWR)
+### 5.3 [sequence name]   (+ mermaid `sequenceDiagram` with explicit alt/opt failure paths)
+### 5.4 Behavioral requirement focus
+## 6. Hardware-Software Interface (HSI)
+### 6.1 HSI elements
+### 6.2 HSI Requirements (HSI)
 ```
 
 Requirement ID taxonomy used consistently: **CSR** (Cybersecurity Requirement, item-level) →
 **FSC** (Functional Security Concept, the overarching strategy for realizing the CSRs) →
 **FSR** (Functional Security Requirements, decomposed testable functional requirements, still
-implementation-agnostic) → **FCR** (Functional Cybersecurity Concept) → **TCR** (Technical
-Cybersecurity Concept, TDA4VM-specific) → **SWR** (Software Requirement) / **HWR** (Hardware
-Requirement). Each file uses a topic suffix, e.g. `CSR-SA-1` (Secure Access), `CSR-JTAG-1`,
+implementation-agnostic) → **SYSR** (System Requirement, system-level allocation across the
+entities/trust boundaries in Section 2) → **TSC** (Technical Security Concept — renamed from the
+older FCR/"Functional Cybersecurity Concept" label) → **TSR** (Technical Security Requirements,
+TDA4VM-specific — renamed from the older TCR/"Technical Cybersecurity Concept" label) → **HWR**
+(Hardware Requirement) / **SWR** (Software Requirement) → **HSI** (Hardware-Software Interface
+Requirement, register/API/message-level contract between the hardware in Section 4 and the
+software in Section 5). Each file uses a topic suffix, e.g. `CSR-SA-1` (Secure Access), `CSR-JTAG-1`,
 `CSR-OTA-1`, `CSR-SRP-1` (reprogramming), `CSR-RTMD-1`, `CSR-LOG-1`, `CSR-COM-1`, `CSR-STO-1`
-(secure storage), with matching `FSC-<suffix>-n`/`FSR-<suffix>-n` IDs, and the boot doc uses bare
-`CSR-1`/`FSC-1`/`FSR-1`/`FCR-1`/`TCR-1`.
+(secure storage), with matching `FSC-<suffix>-n`/`FSR-<suffix>-n`/`SYSR-<suffix>-n`/
+`TSC-<suffix>-n`/`TSR-<suffix>-n`/`HSI-<suffix>-n` IDs, and the boot doc uses bare
+`CSR-1`/`FSC-1`/`FSR-1`/`SYSR-1`/`TSC-1`/`TSR-1`/`HSI-1`.
 
-**Rule:** Section 1.3 must always spell out full requirement text under
-`**CSR**`/`**FSC**`/`**FSR**`/`**FCR**`/`**TCR**` bold subheadings, in that order — never collapse
-to an ID range like "CSR-SA-1 to CSR-SA-5".
+**Rule:** Sections 1.1-1.3 must always spell out full requirement text under their own subheadings
+— never collapse to an ID range like "CSR-SA-1 to CSR-SA-5". Section 2.3 (SYSR) and Section 6.2
+(HSI) are new content, not renamed from an earlier taxonomy — write them fresh per topic, grounded
+in that doc's own Section 2 entities/boundaries (for SYSR) and Section 4/5 hardware+software blocks
+(for HSI), never invented boilerplate.
 
 ## Grounded TDA4VM/J721E facts (verified against TI TISCI documentation)
 
@@ -149,8 +169,8 @@ to an ID range like "CSR-SA-1 to CSR-SA-5".
   MAC (e.g. AES-128-CMAC truncated to configured length) appended to the Authentic PDU. Freshness
   and MAC are checked independently — a valid MAC with stale freshness is still a replay and must
   be dropped.
-- **ISO 21434**: source of the CSR/FCR/TCR concept-layer vocabulary (item-level cybersecurity
-  requirement → functional concept → technical concept).
+- **ISO 21434**: source of the CSR/FSC-FSR/TSC-TSR concept-layer vocabulary (item-level
+  cybersecurity requirement → functional concept → technical concept).
 - Dual-bank (A/B) flash pattern for OTA/reprogramming: candidate writes only ever touch the inactive
   bank; activation re-enters the full DMSC BootROM chain and reverts to the last known-good bank on
   verification failure.
@@ -230,17 +250,17 @@ from memory. All links below were confirmed reachable.
 **Non-TI standards referenced for realism** (verify current edition/scope before quoting specifics)
 - ISO 14229-1 (UDS) — SecurityAccess `0x27`, RequestDownload/TransferData/RequestTransferExit
   `0x34/0x36/0x37`, RoutineControl `0x31`, ECUReset `0x11`, NRCs `0x35/0x36/0x37`.
-- ISO 21434 — cybersecurity engineering lifecycle; source of the CSR/FCR/TCR concept-layer split.
+- ISO 21434 — cybersecurity engineering lifecycle; source of the CSR/FSC-FSR/TSC-TSR concept-layer split.
 - AUTOSAR SecOC (Secure Onboard Communication) specification — freshness value + MAC framing.
 - ISO 24089 — software update engineering (OTA/campaign concepts referenced loosely, not quoted).
 
 ## Workflow for adding/editing a requirement doc
 
-1. Follow the exact 4-view section structure above.
+1. Follow the exact 6-section structure above.
 2. Ground every hardware/technical claim in the facts and references above (fetch the relevant TI
    page if unsure) rather than inventing plausible-sounding generic security architecture.
-3. Write full requirement text in Section 1.3 (never bare ID ranges).
-4. Give the Section 4.1 sequence diagram explicit success **and** failure branches referencing real
+3. Write full requirement text in Sections 1.1-1.3, 2.3, 3.1-3.2, 4.2, 5.2, and 6.2 (never bare ID ranges).
+4. Give the Section 5.3 sequence diagram explicit success **and** failure branches referencing real
    protocol elements (UDS service IDs, TISCI messages, NRCs, SecOC fields) as applicable.
 5. Run the Mermaid validation procedure above before considering diagram edits done.
 

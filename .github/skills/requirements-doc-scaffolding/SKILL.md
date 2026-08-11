@@ -1,6 +1,6 @@
 ---
 name: requirements-doc-scaffolding
-description: 'Scaffold a brand-new TDA4VM ADAS ECU cybersecurity requirements topic document (like TDA4VM_Secure_Storage_Requirements.md) end-to-end: pick a topic and unique ID suffix, fetch/verify grounding facts from TI TISCI docs, author all 4 structural views with full CSR/FSC/FSR/FCR/TCR/SWR/HWR requirement text, author and validate Mermaid diagrams, then update repo bookkeeping. Use when the user says things like "introduce a new security concept", "add a new requirements doc/topic", or "we need requirements for X" in this repo.'
+description: 'Scaffold a brand-new TDA4VM ADAS ECU cybersecurity requirements topic document (like TDA4VM_Secure_Storage_Requirements.md) end-to-end: pick a topic and unique ID suffix, fetch/verify grounding facts from TI TISCI docs, author all 6 structural sections with full CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI requirement text, author and validate Mermaid diagrams, then update repo bookkeeping. Use when the user says things like "introduce a new security concept", "add a new requirements doc/topic", or "we need requirements for X" in this repo.'
 ---
 
 # Requirements Doc Scaffolding (TDA4VM ADAS ECU)
@@ -21,17 +21,27 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
    which page applies) and pull real message names, field names, and constraints. Never invent a
    plausible-sounding TISCI message or eFuse field — if a claim can't be grounded, say so and either
    fetch more docs or phrase the requirement generically instead of inventing a fake TI-specific detail.
-3. **Create `TDA4VM_<Topic>_Requirements.md`** at the workspace root, following the exact 4-view
-   structure from the domain skill:
-   - `## 1. System Static Architecture` → `1.1` entities, `1.2` trust boundaries + `graph LR`
-     mermaid, `1.3` full CSR/FSC/FSR/FCR/TCR requirement text (never bare ID ranges)
-   - `## 2. Hardware Static Architecture` → `2.1` elements, `2.2` HWR mapping
-   - `## 3. Software Static Architecture` → `3.1` blocks + `graph LR` mermaid, `3.2` SWR mapping
-   - `## 4. Dynamic / Behavioral Views` → `4.1` `sequenceDiagram` with explicit `alt`/`opt` failure
-     branches, `4.2` behavioral bullets each citing at least one CSR/FCR/TCR/SWR/HWR ID
-4. **Write Section 1.3 in full sentences** under bold `**CSR**`/`**FSC**`/`**FSR**`/`**FCR**`/`**TCR**`
-   subheadings, in that order — collapsing to `CSR-XXX-1 to CSR-XXX-5` fails review (see
-   requirements-review skill).
+3. **Create `TDA4VM_<Topic>_Requirements.md`** at the workspace root, following the exact 6-section
+   structure from the domain skill (the flow: FSC(→FSR) → System Requirements + System Static
+   Architecture → TSC(→TSR) → Hardware Requirements + Hardware Static Architecture → Software
+   Requirements + Software Static & Dynamic Architecture → HSI):
+   - `## 1. Functional Security Concept` → `1.1` CSR, `1.2` FSC, `1.3` FSR full requirement text
+     (never bare ID ranges)
+   - `## 2. System Requirements and System Static Architecture` → `2.1` entities, `2.2` trust
+     boundaries + `graph LR` mermaid, `2.3` SYSR requirements (new content, not renamed from an
+     older taxonomy)
+   - `## 3. Technical Security Concept` → `3.1` TSC, `3.2` TSR full requirement text
+   - `## 4. Hardware Requirements and Hardware Static Architecture` → `4.1` elements, `4.2` HWR mapping
+   - `## 5. Software Requirements and Software Static & Dynamic Architecture` → `5.1` blocks +
+     `graph LR` mermaid, `5.2` SWR mapping, `5.3` `sequenceDiagram` with explicit `alt`/`opt` failure
+     branches, `5.4` behavioral bullets each citing at least one CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR ID
+   - `## 6. Hardware-Software Interface (HSI)` → `6.1` HSI elements (registers/APIs/messages at the
+     HW/SW boundary), `6.2` HSI requirements (new content)
+4. **Write Sections 1.1-1.3, 2.3, 3.1-3.2, 4.2, 5.2, 6.2 in full sentences** under their own
+   subheadings — collapsing to `CSR-XXX-1 to CSR-XXX-5` fails review (see requirements-review
+   skill). SYSR (2.3) and HSI (6.2) are new categories per this taxonomy, not aliases of an older
+   one — ground them in that doc's own Section 2 entities/boundaries and Section 4/5 hardware and
+   software blocks respectively.
 5. **Author diagrams following the Mermaid authoring rules** in the domain skill (no semicolons in
    message text, no reserved words as aliases, no embedded arrows in message text, `graph LR` not
    `flowchart LR`, every `alt`/`opt`/`loop` closed).
@@ -46,12 +56,14 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
    - If new grounded facts were learned (new TISCI messages, eFuse fields, hardware behavior), add
      a dedicated facts subsection so future docs can reuse them without re-fetching.
    - Update `/memories/repo/overview.md`'s doc count.
-8. **Report back** a short summary: file created, new ID suffix, count of CSR/FCR/TCR/SWR/HWR
-   requirements added, and confirmation that Mermaid validation passed with 0 failures.
+8. **Report back** a short summary: file created, new ID suffix, count of
+   CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI requirements added, and confirmation that Mermaid
+   validation passed with 0 failures.
 
 ## Common mistakes to avoid
 - Skipping the TI-doc fetch step and writing generic textbook security boilerplate instead of a
   TDA4VM/TISCI-grounded claim.
-- Forgetting `2.2`/`3.2` requirement IDs (`HWR-*`/`SWR-*`) — every doc has both, not just CSR/FCR/TCR.
+- Forgetting `4.2`/`5.2`/`6.2` requirement IDs (`HWR-*`/`SWR-*`/`HSI-*`) — every doc has all three,
+  not just CSR/FSC/FSR/SYSR/TSC/TSR.
 - Adding the diagram without running the real Mermaid parser — `get_errors` will not catch syntax
   errors like semicolons inside message text or reserved-word aliases.

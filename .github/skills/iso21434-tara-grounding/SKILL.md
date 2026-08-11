@@ -1,6 +1,6 @@
 ---
 name: iso21434-tara-grounding
-description: 'Ground new or existing TDA4VM ADAS ECU CSR/FSC/FSR/FCR/TCR requirements in ISO 21434 Threat Analysis and Risk Assessment (TARA) vocabulary: assets, damage scenarios, threat scenarios/attack paths, impact rating (Safety/Financial/Operational/Privacy), attack feasibility rating, and risk treatment. Use when the user asks to justify, motivate, add rationale to, or run a TARA/threat analysis for a requirement, or asks "why do we need this requirement".'
+description: 'Ground new or existing TDA4VM ADAS ECU CSR/FSC/FSR/SYSR/TSC/TSR requirements in ISO 21434 Threat Analysis and Risk Assessment (TARA) vocabulary: assets, damage scenarios, threat scenarios/attack paths, impact rating (Safety/Financial/Operational/Privacy), attack feasibility rating, and risk treatment. Use when the user asks to justify, motivate, add rationale to, or run a TARA/threat analysis for a requirement, or asks "why do we need this requirement".'
 ---
 
 # ISO 21434 TARA Grounding (TDA4VM ADAS ECU)
@@ -41,8 +41,8 @@ TARA rationale explains *why*, using ISO 21434's threat/risk vocabulary.
    the DMSC-resident KEK is rated very low feasibility because it's eFuse-protected and only
    reachable via a register-only AES engine with no DMA path (grounded fact from the domain skill);
    a weak UDS SecurityAccess seed/key scheme is comparatively higher feasibility.
-5. State the **risk treatment**: name the specific CSR/FCR/TCR ID(s) in this repo that reduce the
-   risk, and briefly say how (e.g., "reduced via CSR-STO-2 + TCR-STO-1/TCR-STO-2, which bind secret
+5. State the **risk treatment**: name the specific CSR/TSC/TSR ID(s) in this repo that reduce the
+   risk, and briefly say how (e.g., "reduced via CSR-STO-2 + TSR-STO-1/TSR-STO-2, which bind secret
    confidentiality to a device-unique hardware KEK so extraction from one ECU doesn't help on
    another").
 
@@ -56,13 +56,13 @@ TARA rationale explains *why*, using ISO 21434's threat/risk vocabulary.
   driving behavior).
 - **Attack feasibility**: Medium — reading raw flash is straightforward with common tools, but the
   data is useless without the device-specific KEK/DKEK, which is High/Very-Low feasibility to extract
-  (register-only AES engine, no DMA, per TCR-STO-1).
+  (register-only AES engine, no DMA, per TSR-STO-1).
 - **Risk treatment**: retained residual risk is low because CSR-STO-2 (device-bound confidentiality)
-  and TCR-STO-1/TCR-STO-2 (KEK/DKEK derivation) mean the extracted ciphertext is not decryptable off
+  and TSR-STO-1/TSR-STO-2 (KEK/DKEK derivation) mean the extracted ciphertext is not decryptable off
   the original device — no new CSR needed; existing ones already treat this threat scenario.
 
 ## Where to put the rationale
-Do **not** change the repo's mandatory 4-section document structure to add a TARA section inline —
+Do **not** change the repo's mandatory 6-section document structure to add a TARA section inline —
 the domain skill's structure convention is followed "exactly" by every file. Instead:
 - Present TARA rationale in chat as the deliverable, or
 - If the user wants it persisted, ask whether it should go in session memory, a repo memory note, or

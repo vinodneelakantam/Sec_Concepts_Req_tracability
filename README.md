@@ -9,24 +9,34 @@ AUTOSAR SecOC).
 
 ## What's in here
 
-Each `TDA4VM_*_Requirements.md` file covers one security concept end-to-end, structured as
-four views:
+Each `TDA4VM_*_Requirements.md` file covers one security concept end-to-end, following the flow
+**FSC (→FSR) → System Requirements + System Static Architecture → TSC (→TSR) → Hardware
+Requirements + Hardware Static Architecture → Software Requirements + Software Static & Dynamic
+Architecture → HSI**, structured as six sections:
 
-1. **System Static Architecture** - entities, trust boundaries, a Mermaid diagram, and the
-   requirement allocation itself.
-2. **Hardware Static Architecture** - the HW blocks/registers involved (`HWR-*`).
-3. **Dynamic Behavior** - sequence diagrams for the security-relevant flows.
-4. **Software Requirements** - concrete `SWR-*` requirements citing the grounding facts.
+1. **Functional Security Concept** - the CSR, the overarching FSC strategy, and the decomposed FSR.
+2. **System Requirements and System Static Architecture** - entities, trust boundaries, a Mermaid
+   diagram, and the system-level requirement allocation (`SYSR-*`).
+3. **Technical Security Concept** - the TSC (how, functionally) and TSR (how, at a concrete TI
+   TDA4VM mechanism level).
+4. **Hardware Requirements and Hardware Static Architecture** - the HW blocks/registers involved
+   (`HWR-*`).
+5. **Software Requirements and Software Static & Dynamic Architecture** - software blocks, `SWR-*`
+   requirements, and sequence diagrams for the security-relevant flows.
+6. **Hardware-Software Interface (HSI)** - the register/API/message-level contract between the
+   hardware and software layers (`HSI-*`).
 
 Requirements are layered per topic using a consistent ID taxonomy:
 
 - **CSR** - Cybersecurity Requirement (what must be true)
 - **FSC** - Functional Security Concept (the overarching strategy for realizing the CSRs)
 - **FSR** - Functional Security Requirements (decomposed, testable, still implementation-agnostic)
-- **FCR** - Functional Cybersecurity Concept (how, at a functional level)
-- **TCR** - Technical Cybersecurity Concept (how, at a concrete TI TDA4VM mechanism level)
-- **SWR** - Software Requirement
+- **SYSR** - System Requirement (system-level allocation across entities/trust boundaries)
+- **TSC** - Technical Security Concept (how, at a functional level)
+- **TSR** - Technical Security Requirements (how, at a concrete TI TDA4VM mechanism level)
 - **HWR** - Hardware Requirement
+- **SWR** - Software Requirement
+- **HSI** - Hardware-Software Interface Requirement (register/API/message contract)
 
 Topics currently covered:
 
@@ -53,7 +63,8 @@ domain knowledge and workflows used to write and maintain these documents:
   taxonomy, doc structure convention, and Mermaid authoring/validation rules.
 - `requirements-doc-scaffolding` - procedure for adding a brand-new topic document.
 - `requirements-review` - audit checklist for structure, ID taxonomy, and grounding quality.
-- `traceability-matrix` - builds a cross-document CSR/FCR/TCR/SWR/HWR traceability matrix.
+- `traceability-matrix` - builds a cross-document CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI
+  traceability matrix.
 - `iso21434-tara-grounding` - ISO 21434 TARA vocabulary to justify why a given CSR exists.
 - `interview-qa-generator` - generates practice interview Q&A grounded in these documents.
 

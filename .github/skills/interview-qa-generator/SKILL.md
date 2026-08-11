@@ -27,7 +27,7 @@ answer sound more complete.
    - **Scenario**: "An attacker has physical access to a decommissioned ECU and desolders the flash.
      What in this repo's secure storage design prevents them from using the recovered ciphertext on
      another vehicle?" (pairs well with the iso21434-tara-grounding skill for the "why" framing).
-3. **Answer format**: give a concise model answer, then a one-line citation of which CSR/FCR/TCR ID
+3. **Answer format**: give a concise model answer, then a one-line citation of which CSR/TSC/TSR ID
    and/or which TI mechanism (TISCI message, eFuse field, standard clause) backs it up, so the answer
    is verifiable against the source doc rather than free-floating.
 4. **If a question would require a fact not present in the domain skill or the target doc**, say so
@@ -44,4 +44,4 @@ responsibility does that push onto the host, and why might you avoid this approa
 firewall its own memory to keep it secret — unlike `SET_DKEK`, where the key is programmed directly
 into SA2UL registers and never leaves the crypto engine. TI recommends the `SET_DKEK` approach
 wherever hardware acceleration is available for exactly this reason.
-*(TCR-STO-3, TCR-STO-4 — `TDA4VM_Secure_Storage_Requirements.md`)*
+*(TSR-STO-3, TSR-STO-4 — `TDA4VM_Secure_Storage_Requirements.md`)*
