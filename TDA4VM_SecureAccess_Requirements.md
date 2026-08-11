@@ -1,146 +1,99 @@
-# SecureAccess (Diagnostic Authentication and Authorization) — TDA4VM ADAS ECU
+# Secure Access (Diagnostics and Protected Services) Architecture Requirements - TDA4VM ADAS ECU
 
-## Scope and terminology note
+## 1. System Static Architecture
 
-This document defines requirement traceability for protected diagnostic access (for example UDS SecurityAccess and authorization-gated services). "SecureAccess" here means both authentication and fine-grained authorization enforcement.
+### 1.1 System entities
+- Authorized tester/service tool
+- Vehicle gateway
+- Target ECU diagnostics endpoint (DCM)
+- Security policy authority/provisioning backend
+- Fleet operations backend for audit telemetry
 
-## 0. Conceptual primer
-
-Diagnostic connectivity is necessary for service and manufacturing, but protected services can alter ECU behavior or software state. SecureAccess therefore must prevent unauthorized invocation, replay, brute-force probing, and stale-session abuse.
-
-## 1. Cybersecurity engineering flow
-
-```mermaid
-flowchart LR
-  Goal["Goal<br/>Only trusted tools can invoke protected diagnostics"]
-  Req["Requirements<br/>Auth + anti-replay + lockout + role policy"]
-  FCR["Functional concept<br/>AuthN/AuthZ split + timeout + deny-by-default"]
-  TCR["Technical concept<br/>SA2UL-backed crypto + secured key handling"]
-  Arch["Architecture<br/>DCM access gate + policy + logging"]
-
-  Goal --> Req --> FCR --> TCR --> Arch
-```
-
-## 2. Cybersecurity Goal
-
-Ensure only authenticated and authorized diagnostic entities can execute protected services, and ensure abuse attempts are rate-limited and observable.
-
-## 3. Cybersecurity Requirements (item level)
-
-CSR-SA-1: Protected services shall require successful security access before execution.
-CSR-SA-2: Challenge-response shall include freshness/nonce and anti-replay protection.
-CSR-SA-3: Failed attempts shall trigger lockout/backoff and audit logging.
-CSR-SA-4: Access rights shall be role/session specific.
-CSR-SA-5: Elevated access shall expire automatically and require re-authentication.
-
-## 4. Cybersecurity Concept
-
-### 4.1 Functional Cybersecurity Concept & Requirements
-
-FCR-SA-1: Separate authentication (identity proof) from authorization (service scope).
-FCR-SA-2: Enforce deny-by-default for protected services when access state is invalid.
-FCR-SA-3: Invalidate access state on timeout, reset, and session downgrade.
-FCR-SA-4: Apply graded delay/lockout policy for brute-force resistance.
-
-### 4.2 Technical Cybersecurity Concept & Requirements (TDA4VM-oriented)
-
-TCR-SA-1: Implement challenge-response using hardware-assisted crypto (SA2UL where applicable).
-TCR-SA-2: Keep long-term secrets in secure storage/provisioning flow and prevent plaintext export.
-TCR-SA-3: Bind decisions to lifecycle state and policy configuration.
-TCR-SA-4: Emit security events to protected logging path for forensic continuity.
-
-## 5. System Cybersecurity Architecture
+### 1.2 Trust boundaries and interfaces
+- Boundary A: Tester to gateway/ECU diagnostic interface
+- Boundary B: DCM service layer to protected ECU services
+- Boundary C: Access-state management to session manager boundary
+- Boundary D: ECU logging path to backend audit domain
 
 ```mermaid
-flowchart LR
-  Tester["Diagnostic tester"]
-  Gateway["Vehicle gateway"]
-  DCM["DCM + SecurityAccess handler"]
-  Policy["Authorization policy"]
-  Crypto["SA2UL/Crypto service"]
-  Log["Secure logging"]
-
-  Tester --> Gateway --> DCM
-  DCM --> Crypto
-  DCM --> Policy
-  DCM --> Log
+graph LR
+  Tester[Tester Tool] -->|UDS/Diag| GW[Gateway]
+  GW --> DCM[DCM/SecurityAccess]
+  DCM --> SRV[Protected Services]
+  DCM --> LOG[Secure Logging]
+  LOG --> Backend[Ops Backend]
 ```
 
-## 6. SW Requirements & HW Requirements (allocated)
+### 1.3 System-level requirement allocation
+- CSR-SA-1 to CSR-SA-5
+- FCR-SA-1 to FCR-SA-4
+- TCR-SA-1 to TCR-SA-4
 
-### 6.1 Software requirements
+## 2. Hardware Static Architecture
 
-SWR-SA-1: DCM shall gate RequestDownload, RoutineControl, and protected WriteData services by access level.
-SWR-SA-2: SecurityAccess state machine shall enforce timeout, retry counters, and lockout windows.
-SWR-SA-3: Service handlers shall validate access token/state at each protected request.
-SWR-SA-4: Security failures shall be logged and exposed to diagnostics monitoring.
+### 2.1 Hardware elements
+- MCU and peripheral control domain
+- SA2UL crypto acceleration support
+- Secure key storage/provisioning anchor
+- Boot ROM + lifecycle state controls
+- JTAG/debug state controls affecting access policy
 
-### 6.2 Hardware requirements
+### 2.2 Hardware responsibility mapping
+- HWR-SA-1: Auth timing targets met through crypto acceleration
+- HWR-SA-2: Hardware-backed credential handling and key protection
+- TCR-SA-3: Lifecycle state contributes to trust decisions
 
-HWR-SA-1: Crypto hardware support shall meet authentication timing constraints.
-HWR-SA-2: Hardware-backed key protection primitives shall be available for credential handling.
+## 3. Software Static Architecture
 
-## 7. Software Architecture
+### 3.1 Software blocks
+- DCM SecurityAccess state machine
+- Authentication challenge/response module
+- Authorization policy evaluator
+- Protected service gates (RequestDownload, RoutineControl, WriteData)
+- Session timeout/revocation manager
+- Secure logging emitter
+
+```mermaid
+graph LR
+  Auth[Challenge/Response] --> Policy[Authorization Policy]
+  Policy --> Gate[Protected Service Gate]
+  Gate --> Svc[Service Handlers]
+  Policy --> Sess[Session/Timeout Manager]
+  Gate --> Log[Secure Logging]
+```
+
+### 3.2 Software requirement allocation
+- SWR-SA-1: DCM gates protected UDS services by access level
+- SWR-SA-2: Enforce timeout, retry counter, lockout windows
+- SWR-SA-3: Validate access state per protected request
+- SWR-SA-4: Log and expose security failures
+
+## 4. Dynamic / Behavioral Views
+
+### 4.1 Secure access challenge-response flow
 
 ```mermaid
 sequenceDiagram
   participant T as Tester
-  participant D as DCM
-  participant C as Crypto/SA2UL
-  participant P as Policy
-  participant L as Secure Log
+  participant D as DCM SecurityAccess
+  participant C as Crypto Module
+  participant G as Protected Service Gate
+  participant L as Secure Logging
 
-  T->>D: Request seed/challenge
-  D->>C: Generate challenge material
-  D-->>T: Challenge
-  T->>D: Response/key material
-  D->>C: Verify response
-  C-->>D: Verification result
-  D->>P: Resolve authorization level
+  T->>D: Request security access seed/challenge
+  D->>T: Nonce/challenge
+  T->>D: Response token
+  D->>C: Verify token + freshness
   alt Valid
-    D-->>T: Access granted
-    D->>L: Log success
+    D->>G: Grant scoped access with timeout
+    T->>G: Request protected service
   else Invalid
-    D-->>T: Access denied/delay
-    D->>L: Log failure + attempt count
+    D->>L: Log failure + increment retry
+    D-->>T: Deny / lockout/backoff
   end
 ```
 
-## 8. Hardware Architecture and scenarios
-
-### 8.1 Hardware dynamic sequence diagram
-
-```mermaid
-sequenceDiagram
-  participant Tester as Diagnostic tester
-  participant DCM as DCM/SecurityAccess
-  participant SA2UL as SA2UL/Crypto
-  participant Policy as Authorization policy
-  participant Log as Secure log
-
-  alt Scenario A - Default session
-    Tester->>DCM: Protected service request without access
-    DCM->>Policy: Check access state
-    Policy-->>DCM: Deny
-  else Scenario B - Authenticated session
-    Tester->>DCM: Challenge-response exchange
-    DCM->>SA2UL: Verify response
-    SA2UL-->>DCM: Valid
-    DCM->>Policy: Grant scoped access level
-  else Scenario C - Probing/brute-force attempts
-    Tester->>DCM: Repeated invalid responses
-    DCM->>Policy: Increment failure counter
-    Policy-->>DCM: Enforce delay/lockout
-    DCM->>Log: Record attack pattern
-  end
-```
-
-- Scenario A: Normal diagnostics in default session with protected services denied.
-- Scenario B: Authenticated service session with bounded privileges and expiry.
-- Scenario C: Attack/probing attempts with delay escalation and lockout.
-
-## 9. Verification focus
-
-- Replay test: Reused response must fail.
-- Privilege test: Protected service call without valid state must be rejected.
-- Abuse test: Repeated failures must enforce delay/lockout and log evidence.
+### 4.2 Behavioral requirement focus
+- Deny-by-default unless access state is valid (CSR-SA-1, FCR-SA-2)
+- Anti-replay and freshness are mandatory in challenge-response (CSR-SA-2)
+- Retries, lockout, timeout, and automatic revocation are enforced (CSR-SA-3, CSR-SA-5, SWR-SA-2)

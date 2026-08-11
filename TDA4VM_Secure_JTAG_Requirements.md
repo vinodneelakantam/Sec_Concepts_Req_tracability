@@ -1,141 +1,96 @@
-# Secure JTAG / Debug Control — TDA4VM ADAS ECU
+# Secure JTAG and Debug Control Architecture Requirements - TDA4VM ADAS ECU
 
-## Scope and terminology note
+## 1. System Static Architecture
 
-This document covers production-grade debug protection for a TDA4VM-based ADAS ECU. "Secure JTAG" is treated as controlled debug authorization tied to lifecycle state, device identity, and auditable unlock policy, not as simple pin-level enable/disable.
+### 1.1 System entities
+- Authorized service/debug tool
+- Vehicle gateway or direct service interface
+- TDA4VM debug authorization manager
+- Device lifecycle/policy authority
+- Secure logging and backend audit systems
 
-## 0. Conceptual primer
-
-JTAG itself is not insecure; unmanaged JTAG is insecure. In development, unrestricted debug is useful. In production, the same capability can bypass software controls, extract key material, patch safety logic, or suppress forensic evidence. Secure JTAG therefore means: locked-by-default, cryptographically authorized unlock, bounded privilege, and auditable transitions.
-
-## 1. Cybersecurity engineering flow
-
-```mermaid
-flowchart LR
-  Goal["Cybersecurity Goal<br/>Prevent unauthorized debug takeover of production ECU"]
-  Req["Cybersecurity Requirements<br/>Auth unlock + lifecycle binding + logging + lockout"]
-  FCR["Functional Concept<br/>Least privilege, role/session limits, deny-by-default"]
-  TCR["Technical Concept<br/>HS lifecycle + DMSC policy + secure event path"]
-  Arch["Architecture Allocation<br/>Debug controller + diagnostics + logging + policy storage"]
-
-  Goal --> Req --> FCR --> TCR --> Arch
-```
-
-## 2. Cybersecurity Goal
-
-Prevent unauthorized debug access that could disclose secrets, bypass security controls, modify safety-relevant behavior, or weaken incident traceability.
-
-## 3. Cybersecurity Requirements (item level)
-
-CSR-JTAG-1: Debug unlock shall require cryptographic authorization, not static passwords.
-CSR-JTAG-2: Production lifecycle state shall keep unrestricted JTAG disabled by default.
-CSR-JTAG-3: Debug unlock attempts and debug state transitions shall be logged with integrity protection.
-CSR-JTAG-4: Debug privileges shall be bounded by role, time, and session scope.
-CSR-JTAG-5: Repeated failed unlock attempts shall trigger lockout/backoff policy.
-
-## 4. Cybersecurity Concept
-
-### 4.1 Functional Cybersecurity Concept & Requirements
-
-FCR-JTAG-1: Enforce locked-by-default debug posture in production.
-FCR-JTAG-2: Separate debug authentication from debug authorization level.
-FCR-JTAG-3: Apply least-privilege debug profiles (observation-only vs invasive debug).
-FCR-JTAG-4: Force re-authentication after reset, timeout, or privilege escalation request.
-
-### 4.2 Technical Cybersecurity Concept & Requirements (TDA4VM-oriented)
-
-TCR-JTAG-1: Use HS device lifecycle and DMSC/TIFS policy controls to govern debug access.
-TCR-JTAG-2: Keep debug authorization assets in secure provisioning domain, not in application plaintext.
-TCR-JTAG-3: Route unlock events and policy failures into secure logging with anti-tamper metadata.
-TCR-JTAG-4: Ensure reset paths do not implicitly grant elevated debug privileges.
-
-## 5. System Cybersecurity Architecture
+### 1.2 Trust boundaries and interfaces
+- Boundary A: Tool domain to ECU authorization interface
+- Boundary B: Authorization manager to hardware debug controller
+- Boundary C: Lifecycle/policy domain to runtime unlock decisions
+- Boundary D: Debug state transitions to secure logging domain
 
 ```mermaid
-flowchart LR
-  Tool["Authorized service/debug tool"]
-  DCM["Diagnostic/Auth service"]
-  Policy["Security policy manager"]
-  DMSC["DMSC/TIFS debug control"]
-  Log["Secure logging"]
-
-  Tool --> DCM --> Policy --> DMSC
-  DCM --> Log
-  Policy --> Log
-  DMSC --> Log
+graph LR
+  Tool[Authorized Debug Tool] --> Auth[Debug Auth Service]
+  Auth --> Policy[Lifecycle/Policy Manager]
+  Policy --> Dbg[Debug Controller/JTAG]
+  Auth --> Log[Secure Logging]
+  Log --> Backend[Audit Backend]
 ```
 
-## 6. SW Requirements & HW Requirements (allocated)
+### 1.3 System-level requirement allocation
+- CSR-JTAG-1 to CSR-JTAG-5
+- FCR-JTAG-1 to FCR-JTAG-4
+- TCR-JTAG-1 to TCR-JTAG-4
 
-### 6.1 Software requirements
+## 2. Hardware Static Architecture
 
-SWR-JTAG-1: Diagnostic stack shall not expose raw JTAG enable in normal sessions.
-SWR-JTAG-2: Unlock workflow shall validate credentials, role, and expiry before granting any debug profile.
-SWR-JTAG-3: Session manager shall automatically revoke debug privileges on timeout/reset.
-SWR-JTAG-4: Security events shall be emitted for unlock success, failure, lockout, and revoke actions.
+### 2.1 Hardware elements
+- MCU main processing domain
+- Debug/JTAG controller and TAP interface
+- Boot ROM and lifecycle-state anchors
+- HSM/secure policy enforcement block
+- Non-volatile policy/configuration storage
 
-### 6.2 Hardware requirements
+### 2.2 Hardware responsibility mapping
+- HWR-JTAG-1: Lifecycle state enforces production debug lock
+- HWR-JTAG-2: Debug transitions are policy-gated
+- HWR-JTAG-3: Reset defaults to locked/non-invasive mode
 
-HWR-JTAG-1: Device lifecycle state shall enforce debug lock in production mode.
-HWR-JTAG-2: Debug controller transitions shall be policy-gated by security subsystem.
-HWR-JTAG-3: Hardware state after reset shall default to non-invasive/locked debug mode.
+## 3. Software Static Architecture
 
-## 7. Software Architecture
+### 3.1 Software blocks
+- Diagnostic authentication workflow
+- Debug authorization policy evaluator
+- Privilege/session scope manager
+- Lockout/backoff and retry counter manager
+- Secure logging interface for debug events
+
+```mermaid
+graph LR
+  Diag[Diag/Auth Service] --> Eval[Authorization Evaluator]
+  Eval --> Scope[Privilege/Session Manager]
+  Scope --> JTAG[JTAG Control Adapter]
+  Eval --> Lock[Lockout/Backoff Manager]
+  Scope --> Log[Secure Logging]
+```
+
+### 3.2 Software requirement allocation
+- SWR-JTAG-1: No raw JTAG enable in normal sessions
+- SWR-JTAG-2: Validate credentials/role/expiry before grant
+- SWR-JTAG-3: Revoke privileges on timeout/reset
+- SWR-JTAG-4: Log unlock, failure, lockout, revoke events
+
+## 4. Dynamic / Behavioral Views
+
+### 4.1 Secure debug unlock sequence
 
 ```mermaid
 sequenceDiagram
-  participant Tool as Service Tool
-  participant DCM as DCM/Security Handler
-  participant POL as Policy Manager
-  participant DBG as Debug Control
-  participant LOG as Secure Log
+  participant T as Service Tool
+  participant A as Auth Service
+  participant P as Policy Manager
+  participant J as JTAG Controller
+  participant L as Secure Logging
 
-  Tool->>DCM: Unlock request + credentials
-  DCM->>POL: Authenticate + authorize debug profile
+  T->>A: Unlock request + credentials
+  A->>P: Validate lifecycle + role + time policy
   alt Authorized
-    POL->>DBG: Apply scoped unlock (time/role bounded)
-    DBG-->>POL: State applied
-    POL->>LOG: Record unlock event
-    DCM-->>Tool: Access granted
-  else Rejected
-    POL->>LOG: Record failed attempt
-    DCM-->>Tool: Access denied / backoff
+    P->>J: Enable scoped debug profile
+    A->>L: Log unlock success
+  else Denied
+    P->>A: Deny + backoff/lockout state
+    A->>L: Log failure/lockout event
   end
 ```
 
-## 8. Hardware Architecture and scenarios
-
-### 8.1 Hardware dynamic sequence diagram
-
-```mermaid
-sequenceDiagram
-  participant Tool as Service Tool
-  participant DMSC as DMSC/TIFS policy control
-  participant JTAG as JTAG debug port
-  participant Log as Secure log
-
-  alt Scenario A - Normal operation
-    DMSC->>JTAG: Keep debug locked by lifecycle policy
-    JTAG-->>DMSC: Locked state confirmed
-  else Scenario B - Authorized service session
-    Tool->>DMSC: Request scoped debug unlock
-    DMSC->>JTAG: Apply time-bounded unlock profile
-    JTAG-->>DMSC: Unlock active
-    DMSC->>JTAG: Revoke on timeout/session end
-  else Scenario C - Attack attempts
-    Tool->>DMSC: Repeated invalid unlock attempts
-    DMSC->>JTAG: Maintain lock state
-    DMSC->>Log: Record failures and lockout trigger
-  end
-```
-
-- Scenario A (normal operation): JTAG remains locked, no unlock request accepted without valid authorization.
-- Scenario B (authorized service): Time-bounded unlock granted, then revoked automatically.
-- Scenario C (attack attempts): Repeated invalid attempts trigger lockout and tamper-relevant logging.
-
-## 9. Verification focus
-
-- Negative security test: Unauthorized unlock attempt fails and is logged.
-- Lifecycle test: Production lifecycle always boots with locked debug.
-- Robustness test: Failed-attempt threshold enforces lockout/backoff policy.
-- Session test: Debug privilege auto-revokes on timeout and reset.
+### 4.2 Behavioral requirement focus
+- Locked-by-default production posture is always enforced (CSR-JTAG-2, FCR-JTAG-1)
+- Authentication and authorization are separate decisions (FCR-JTAG-2)
+- Re-authentication and revocation occur on reset/timeout/escalation (FCR-JTAG-4, SWR-JTAG-3)

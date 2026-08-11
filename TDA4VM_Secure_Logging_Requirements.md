@@ -1,138 +1,95 @@
-# Secure Logging — TDA4VM ADAS ECU
+# Secure Logging Architecture Requirements - TDA4VM ADAS ECU
 
-## Scope and terminology note
+## 1. System Static Architecture
 
-This document defines requirement traceability for tamper-evident security logging on a TDA4VM-based ADAS ECU, including event capture, retention, privacy filtering, and export trust.
+### 1.1 System entities
+- Security event producers (boot, diagnostics, comm, update, runtime monitor)
+- Central log manager on ECU
+- Gateway/SOC forwarding service
+- Cloud/SOC backend for retention and analytics
+- Service/tester endpoint for controlled retrieval
 
-## 0. Conceptual primer
-
-Security controls without trustworthy logs are hard to audit and hard to improve. Logging is not only data storage; it is evidence integrity, ordering, retention policy, and privacy-aware disclosure.
-
-## 1. Cybersecurity engineering flow
-
-```mermaid
-flowchart LR
-  Goal["Goal<br/>Trustworthy security evidence across ECU lifecycle"]
-  Req["Requirements<br/>Integrity + retention + privacy + correlation"]
-  FCR["Functional concept<br/>Tamper-evident records + severity-based retention"]
-  TCR["Technical concept<br/>SA2UL MAC/sign + protected NvM + authenticated export"]
-  Arch["Architecture<br/>Event producers + log manager + secure store + backend upload"]
-
-  Goal --> Req --> FCR --> TCR --> Arch
-```
-
-## 2. Cybersecurity Goal
-
-Provide reliable, tamper-evident, privacy-aware security logs suitable for detection, incident investigation, and compliance evidence.
-
-## 3. Cybersecurity Requirements (item level)
-
-CSR-LOG-1: Security-relevant events shall be logged with integrity protection.
-CSR-LOG-2: Retention/rotation shall preserve high-criticality events and prevent silent loss.
-CSR-LOG-3: Sensitive data fields shall be minimized or protected according to privacy policy.
-CSR-LOG-4: Time/counter context shall support event sequencing and cross-source correlation.
-CSR-LOG-5: Exported logs shall maintain provenance and integrity metadata.
-
-## 4. Cybersecurity Concept
-
-### 4.1 Functional Cybersecurity Concept & Requirements
-
-FCR-LOG-1: Use tamper-evident record chaining or signed batches.
-FCR-LOG-2: Define severity classes with differentiated retention and upload behavior.
-FCR-LOG-3: Collect events from boot, diagnostics, reprogramming, comm security, and runtime monitoring.
-FCR-LOG-4: Ensure logging failure modes do not silently suppress critical events.
-
-### 4.2 Technical Cybersecurity Concept & Requirements (TDA4VM-oriented)
-
-TCR-LOG-1: Use SA2UL-backed MAC/signature primitives for integrity tagging.
-TCR-LOG-2: Store critical logs in protected NvM partition with crash-consistent writes.
-TCR-LOG-3: Support authenticated upload to backend/SOC with chain continuity markers.
-TCR-LOG-4: Enforce local privacy redaction/masking policy before export.
-
-## 5. System Cybersecurity Architecture
+### 1.2 Trust boundaries and interfaces
+- Boundary A: Event producer modules to log manager ingestion API
+- Boundary B: Local protected storage domain to external export domain
+- Boundary C: Privacy policy enforcement boundary before export
+- Boundary D: Backend ingestion and long-term retention boundary
 
 ```mermaid
-flowchart LR
-  Src["Security event sources"]
-  LM["Log manager"]
-  Crypto["Crypto/SA2UL"]
-  NvM["Protected log storage"]
-  BE["Backend/SOC collector"]
-
-  Src --> LM --> Crypto --> NvM
-  NvM --> BE
+graph LR
+  Prod[Security Event Producers] --> LM[Log Manager]
+  LM --> Store[Protected Local Storage]
+  LM --> Redact[Privacy/Redaction Policy]
+  Redact --> GW[Gateway/SOC]
+  GW --> Cloud[Backend Analytics]
 ```
 
-## 6. SW Requirements & HW Requirements (allocated)
+### 1.3 System-level requirement allocation
+- CSR-LOG-1 to CSR-LOG-5
+- FCR-LOG-1 to FCR-LOG-4
+- TCR-LOG-1 to TCR-LOG-4
 
-### 6.1 Software requirements
+## 2. Hardware Static Architecture
 
-SWR-LOG-1: Log manager shall classify and prioritize events by security severity.
-SWR-LOG-2: Each persisted record/batch shall include integrity metadata.
-SWR-LOG-3: Retention/rotation shall preserve critical events under storage pressure.
-SWR-LOG-4: Export path shall retain ordering/provenance and apply privacy policy.
+### 2.1 Hardware elements
+- MCU execution domain for log services
+- SA2UL crypto path for integrity tags
+- Persistent flash/NvM partitions for secure retention
+- Storage controller path with recoverable write guarantees
+- Communication peripherals for authenticated export
 
-### 6.2 Hardware requirements
+### 2.2 Hardware responsibility mapping
+- HWR-LOG-1: Wear-aware persistent retention behavior
+- HWR-LOG-2: Atomic/recoverable write support
+- HWR-LOG-3: Practical cost of integrity-tag generation via crypto hardware
 
-HWR-LOG-1: Persistent storage shall support wear-aware retention behavior.
-HWR-LOG-2: Storage and controller paths shall support atomic or recoverable writes.
-HWR-LOG-3: Crypto hardware shall support practical integrity-tag generation cost.
+## 3. Software Static Architecture
 
-## 7. Software Architecture
+### 3.1 Software blocks
+- Log ingestion and normalization module
+- Severity classifier and retention policy manager
+- Integrity chain/signing module
+- Rotation and storage-pressure manager
+- Export and provenance metadata manager
+- Privacy redaction/masking policy engine
+
+```mermaid
+graph LR
+  In[Log Ingestion] --> Class[Severity Classifier]
+  Class --> Intg[Integrity Chain/Signing]
+  Intg --> Keep[Retention/Rotation]
+  Keep --> Exp[Export Manager]
+  Exp --> Priv[Privacy Policy]
+```
+
+### 3.2 Software requirement allocation
+- SWR-LOG-1: Classify/prioritize events by severity
+- SWR-LOG-2: Persist integrity metadata per record or batch
+- SWR-LOG-3: Preserve critical events under storage pressure
+- SWR-LOG-4: Maintain ordering/provenance and apply privacy policy on export
+
+## 4. Dynamic / Behavioral Views
+
+### 4.1 Secure event logging and export sequence
 
 ```mermaid
 sequenceDiagram
-  participant E as Event source
-  participant L as Log manager
-  participant C as Crypto
-  participant N as NvM
+  participant P as Security Producer
+  participant M as Log Manager
+  participant C as Integrity Crypto
+  participant S as Protected Storage
   participant B as Backend
 
-  E->>L: Emit security event
-  L->>C: Request integrity tag
-  C-->>L: Tag result
-  L->>N: Persist record/batch
-  alt Upload window
-    N->>B: Authenticated export
+  P->>M: Emit event
+  M->>C: Generate integrity tag/chain marker
+  C-->>M: Tag
+  M->>S: Persist event batch
+  alt Export policy matched
+    M->>B: Upload authenticated log batch
   end
 ```
 
-## 8. Hardware Architecture and scenarios
-
-### 8.1 Hardware dynamic sequence diagram
-
-```mermaid
-sequenceDiagram
-  participant Src as Event sources
-  participant LM as Log manager
-  participant SA2UL as SA2UL/Crypto
-  participant NvM as Protected storage
-  participant BE as Backend/SOC
-
-  alt Scenario A - Normal operation
-    Src->>LM: Emit security events
-    LM->>SA2UL: Generate integrity tag
-    SA2UL-->>LM: Tag result
-    LM->>NvM: Store event batch
-    NvM->>BE: Authenticated periodic upload
-  else Scenario B - Storage pressure
-    Src->>LM: High event volume burst
-    LM->>NvM: Apply retention policy and rotation
-    NvM-->>LM: Critical events preserved
-  else Scenario C - Tamper attempt
-    Src->>LM: Readback/verification request
-    LM->>SA2UL: Validate chain/tag integrity
-    SA2UL-->>LM: Mismatch detected
-    LM->>BE: Raise tamper alert
-  end
-```
-
-- Scenario A: Normal operation with prioritized retention and periodic upload.
-- Scenario B: Storage pressure; low-priority entries rotate while critical evidence remains.
-- Scenario C: Tamper attempt; integrity chain mismatch is detectable.
-
-## 9. Verification focus
-
-- Tamper-evidence test: Edited/deleted records must be detectable.
-- Retention test: Critical events survive rotation pressure.
-- Privacy/export test: Restricted fields remain masked and provenance remains verifiable.
+### 4.2 Behavioral requirement focus
+- Logging is tamper-evident and integrity-protected (CSR-LOG-1, FCR-LOG-1)
+- Critical evidence survives retention pressure (CSR-LOG-2, SWR-LOG-3)
+- Export preserves provenance and privacy requirements (CSR-LOG-5, TCR-LOG-4)
