@@ -31,7 +31,8 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
      boundaries + `graph LR` mermaid, `2.3` SYSR requirements (new content, not renamed from an
      older taxonomy)
    - `## 3. Technical Security Concept` → `3.1` TSC, `3.2` TSR full requirement text
-   - `## 4. Hardware Requirements and Hardware Static Architecture` → `4.1` elements, `4.2` HWR mapping
+   - `## 4. Hardware Requirements and Hardware Static Architecture` → `4.1` elements + `graph LR`
+     hardware static architecture mermaid diagram, `4.2` HWR mapping
    - `## 5. Software Requirements and Software Static & Dynamic Architecture` → `5.1` blocks +
      `graph LR` mermaid, `5.2` SWR mapping, `5.3` `sequenceDiagram` with explicit `alt`/`opt` failure
      branches, `5.4` behavioral bullets each citing at least one CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR ID
@@ -65,5 +66,8 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
   TDA4VM/TISCI-grounded claim.
 - Forgetting `4.2`/`5.2`/`6.2` requirement IDs (`HWR-*`/`SWR-*`/`HSI-*`) — every doc has all three,
   not just CSR/FSC/FSR/SYSR/TSC/TSR.
+- Forgetting the Section 4.1 hardware static architecture `graph LR` diagram — every doc has three
+  diagrams total (2.2 trust boundaries, 4.1 hardware static architecture, 5.1 software blocks) plus
+  the 5.3 sequence diagram, not just two.
 - Adding the diagram without running the real Mermaid parser — `get_errors` will not catch syntax
   errors like semicolons inside message text or reserved-word aliases.

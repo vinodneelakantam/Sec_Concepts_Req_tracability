@@ -43,7 +43,7 @@ Software Requirements + Software Static & Dynamic Architecture → HSI**.
 ### 3.1 Technical Security Concept (TSC)
 ### 3.2 Technical Security Requirements (TSR)
 ## 4. Hardware Requirements and Hardware Static Architecture
-### 4.1 Hardware elements
+### 4.1 Hardware elements   (+ mermaid `graph LR` hardware static architecture diagram)
 ### 4.2 Hardware Requirements (HWR)
 ## 5. Software Requirements and Software Static & Dynamic Architecture
 ### 5.1 Software blocks   (+ mermaid `graph LR`)
@@ -75,6 +75,12 @@ software in Section 5). Each file uses a topic suffix, e.g. `CSR-SA-1` (Secure A
 (HSI) are new content, not renamed from an earlier taxonomy — write them fresh per topic, grounded
 in that doc's own Section 2 entities/boundaries (for SYSR) and Section 4/5 hardware+software blocks
 (for HSI), never invented boilerplate.
+
+**Rule:** Section 4.1 must include a `graph LR` hardware static architecture diagram, exactly like
+Section 2.2's trust-boundary diagram and Section 5.1's software-block diagram — a doc with only a
+bullet list of hardware elements and no diagram is incomplete. This diagram shows physical/hardware
+component wiring (DMSC, eFuse, SA2UL, cores, flash, JTAG, mailbox/IPC, peripherals), distinct from
+the system-entity/trust-boundary view in 2.2 and the software-module view in 5.1.
 
 ## Grounded TDA4VM/J721E facts (verified against TI TISCI documentation)
 

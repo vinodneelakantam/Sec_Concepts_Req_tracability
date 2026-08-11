@@ -94,6 +94,17 @@ graph LR
 - Protected NvM/flash partition with an atomic/recoverable write path
 - TISCI mailbox IPC transport (host cores to DMSC/TIFS for all key-management messages)
 
+```mermaid
+graph LR
+  Host[Host Core] --> Mbox[TISCI Mailbox IPC]
+  Mbox --> DMSC[DMSC Cortex-M3 SYSFW]
+  DMSC --> AES[DMSC AES Engine]
+  AES --> EFUSE[eFuse KEK Array]
+  DMSC --> SA2UL[SA2UL DKEK/Crypto Engine]
+  DMSC --> OTP[Extended OTP Array]
+  Host --> NvM[Protected NvM/Flash Partition]
+```
+
 ### 4.2 Hardware Requirements (HWR)
 - HWR-STO-1: KEK is burnt once at TI factory, never retained in any database or manufacturing tester, and reachable only through the DMSC AES engine register interface
 - HWR-STO-2: SA2UL enforces PrivID-based gating of DKEK register usage independent of secure/non-secure or privileged/user attributes

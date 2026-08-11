@@ -29,7 +29,7 @@ Software Static & Dynamic Architecture → HSI**:
 ### 3.1 Technical Security Concept (TSC)
 ### 3.2 Technical Security Requirements (TSR)
 ## 4. Hardware Requirements and Hardware Static Architecture
-### 4.1 Hardware elements
+### 4.1 Hardware elements                       <- must contain a ```mermaid graph LR``` block
 ### 4.2 Hardware Requirements (HWR)
 ## 5. Software Requirements and Software Static & Dynamic Architecture
 ### 5.1 Software blocks                        <- must contain a ```mermaid graph LR``` block
@@ -40,7 +40,7 @@ Software Static & Dynamic Architecture → HSI**:
 ### 6.1 HSI elements
 ### 6.2 HSI Requirements (HSI)
 ```
-Flag: missing sections, sections out of order, or a `2.2`/`5.1`/`5.3` missing its mermaid block.
+Flag: missing sections, sections out of order, or a `2.2`/`4.1`/`5.1`/`5.3` missing its mermaid block.
 
 ### 2. No bare ID ranges (hard rule)
 Search each file's Sections 1.1-1.3, 2.3, 3.1-3.2, 4.2, 5.2, 6.2 for a bare range pattern instead of

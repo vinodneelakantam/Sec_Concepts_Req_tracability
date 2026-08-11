@@ -80,6 +80,15 @@ graph LR
 - CAN/Ethernet and related communication peripherals
 - DMSC BootROM/device security type constrains which trust policy is enforceable
 
+```mermaid
+graph LR
+  APP[A72/R5F Application Core] --> SA2UL[SA2UL Crypto Accelerator]
+  APP --> NET[CAN/Ethernet Peripheral]
+  SA2UL --> DMSC[DMSC Cortex-M3 SYSFW]
+  DMSC --> EFUSE[eFuse Key Provisioning Store]
+  DMSC --> SECTYPE[Device Security Type Policy]
+```
+
 ### 4.2 Hardware Requirements (HWR)
 - HWR-COM-1: Throughput/latency supports enabled protections
 - HWR-COM-2: Key material handling uses protected hardware path

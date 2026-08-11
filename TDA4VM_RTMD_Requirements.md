@@ -81,6 +81,15 @@ graph LR
 - Reset/watchdog/status peripherals
 - JTAG/Sec-AP debug interface state indicators
 
+```mermaid
+graph LR
+  MON[A72/R5F Monitor Core] --> SA2UL[SA2UL Hash/Crypto Accelerator]
+  MON --> WDT[Reset/Watchdog/Status Peripherals]
+  SA2UL --> DMSC[DMSC Cortex-M3 Secure Boot Chain]
+  MON --> NvM[Flash/NvM Reference and Evidence Store]
+  MON --> JTAGST[JTAG/Sec-AP Debug State Indicators]
+```
+
 ### 4.2 Hardware Requirements (HWR)
 - HWR-RTMD-1: Hardware crypto supports periodic integrity checks
 - HWR-RTMD-2: Reset/watchdog telemetry available for correlation

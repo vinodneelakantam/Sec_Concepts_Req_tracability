@@ -96,6 +96,16 @@ graph LR
 - Flash/OSPI/eMMC for bootloader and application images
 - JTAG/Sec-AP debug interface, gated by device security configuration (GP / HS-FS / HS-SE)
 
+```mermaid
+graph LR
+  DMSC[DMSC Cortex-M3 BootROM/SYSFW] --> EFUSE[eFuse SMPK/BMPK/KEYREV/SWREV]
+  DMSC --> SA2UL[SA2UL Crypto Accelerator]
+  DMSC --> R5F[Cortex-R5F SBL Cores]
+  R5F --> A72[Cortex-A72 HLOS Cores]
+  DMSC --> FLASH[Flash/OSPI/eMMC]
+  DMSC --> JTAG[JTAG/Sec-AP Debug Interface]
+```
+
 ### 4.2 Hardware Requirements (HWR)
 - HWR-1: DMSC BootROM is the immutable root of trust that starts every boot (CSR-3, TSC-3, TSR-1)
 - HWR-2: eFuse-held SMPK/BMPK key hash anchors all signature verification; KEYREV selects which of

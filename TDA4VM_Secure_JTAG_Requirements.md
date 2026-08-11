@@ -87,6 +87,16 @@ graph LR
   flag (set via `TISCI_MSG_DISABLE_JTAG_UNLOCK`)
 - Core-level debug gating for A72/R5F/DSP cores, independent from the M3/DMSC debug gate
 
+```mermaid
+graph LR
+  TAP[JTAG TAP/Sec-AP] --> DMSC[DMSC Cortex-M3 SYSFW]
+  DMSC --> EFUSE[eFuse Security Type/Key Hash/JTAG-Disable Flag]
+  DMSC --> GATE[Core Debug Gate Logic]
+  GATE --> A72[Cortex-A72 Debug Port]
+  GATE --> R5F[Cortex-R5F Debug Port]
+  GATE --> DSP[C7x/DSP Debug Port]
+```
+
 ### 4.2 Hardware Requirements (HWR)
 - Default JTAG state is defined per device security type, not a single fixed default:
 

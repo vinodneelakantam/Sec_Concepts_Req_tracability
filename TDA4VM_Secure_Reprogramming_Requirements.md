@@ -80,6 +80,14 @@ graph LR
 - Flash layout for active/candidate image separation
 - Monotonic anti-rollback source: eFuse SWREV counter checked by System Firmware
 
+```mermaid
+graph LR
+  R5F[Cortex-R5F SBL/Flashing] --> DMSC[DMSC Cortex-M3 BootROM/SYSFW]
+  DMSC --> SA2UL[SA2UL Crypto Accelerator]
+  DMSC --> EFUSE[eFuse SWREV Counter]
+  R5F --> FLASH[Active/Candidate Flash Bank]
+```
+
 ### 4.2 Hardware Requirements (HWR)
 - HWR-SRP-1: Active/candidate image separation with atomic metadata updates
 - HWR-SRP-2: DMSC BootROM + System Firmware enforce activation authenticity checks

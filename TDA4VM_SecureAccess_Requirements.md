@@ -79,6 +79,15 @@ graph LR
 - DMSC BootROM + device security type (GP/HS-FS/HS-SE) constrain which access levels are possible
 - JTAG/Sec-AP debug state controls affecting access policy (see Secure JTAG doc)
 
+```mermaid
+graph LR
+  DCM[A72/R5F Diagnostic Comm Module] --> SA2UL[SA2UL Crypto Accelerator]
+  DCM --> DMSC[DMSC Cortex-M3 SYSFW]
+  DMSC --> EFUSE[eFuse SMPK/BMPK Key Store]
+  DMSC --> SECTYPE[Device Security Type Config]
+  SECTYPE --> JTAG[JTAG/Sec-AP Debug State]
+```
+
 ### 4.2 Hardware Requirements (HWR)
 - HWR-SA-1: Auth timing targets met through crypto acceleration
 - HWR-SA-2: Hardware-backed credential handling and key protection

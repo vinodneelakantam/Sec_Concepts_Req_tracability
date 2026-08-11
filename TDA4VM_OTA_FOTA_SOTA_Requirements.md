@@ -81,6 +81,16 @@ graph LR
 - JTAG/Sec-AP debug interface (locked per device security type, see Secure JTAG doc)
 - Communication peripherals (CAN/Ethernet)
 
+```mermaid
+graph LR
+  COMM[CAN/Ethernet Comm Peripheral] --> A72[Cortex-A72 HLOS OTA Client]
+  A72 --> SA2UL[SA2UL Crypto Accelerator]
+  A72 --> R5F[Cortex-R5F SBL/Flashing]
+  R5F --> DMSC[DMSC Cortex-M3 BootROM/SYSFW]
+  DMSC --> EFUSE[eFuse SMPK/BMPK/SWREV]
+  A72 --> FLASH[Active/Candidate/Metadata Flash]
+```
+
 ### 4.2 Hardware Requirements (HWR)
 - HWR-OTA-1: eFuse-anchored device identity/root keys back backend trust establishment
 - HWR-OTA-2: SA2UL throughput sufficient for signature/hash verification at OTA scale

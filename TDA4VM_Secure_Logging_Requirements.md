@@ -79,6 +79,14 @@ graph LR
 - Storage controller path with recoverable write guarantees
 - Communication peripherals for authenticated export
 
+```mermaid
+graph LR
+  APP[A72/R5F Application Core] --> SA2UL[SA2UL Crypto Path]
+  SA2UL --> CTRL[Storage Controller]
+  CTRL --> NvM[Persistent Flash/NvM Partition]
+  APP --> COMM[Export Communication Peripheral]
+```
+
 ### 4.2 Hardware Requirements (HWR)
 - HWR-LOG-1: Wear-aware persistent retention behavior
 - HWR-LOG-2: Atomic/recoverable write support
