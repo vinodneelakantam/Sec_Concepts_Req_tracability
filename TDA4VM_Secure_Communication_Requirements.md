@@ -33,11 +33,11 @@ graph LR
 ## 2. Hardware Static Architecture
 
 ### 2.1 Hardware elements
-- MCU communication and control domains
-- SA2UL crypto acceleration for MAC/signature/encryption
-- Hardware-backed key handling primitives
+- TDA4VM (J721E) communication and control domains: Cortex-A72/R5F application cores, DMSC (System Firmware/TIFS)
+- SA2UL crypto accelerator for MAC/signature/encryption
+- eFuse-anchored key material handled via System Firmware provisioning services
 - CAN/Ethernet and related communication peripherals
-- Boot ROM/lifecycle state that constrains trust policy
+- DMSC BootROM/device security type constrains which trust policy is enforceable
 
 ### 2.2 Hardware responsibility mapping
 - HWR-COM-1: Throughput/latency supports enabled protections

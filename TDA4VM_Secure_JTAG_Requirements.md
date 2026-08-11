@@ -1,26 +1,33 @@
 # Secure JTAG and Debug Control Architecture Requirements - TDA4VM ADAS ECU
 
+> Grounded in the TI TISCI "Secure Debug User Guide" for K3 devices (which includes TDA4VM/J721E).
+> Key facts used below: JTAG default state depends on device security type (GP / HS-FS / HS-SE),
+> unlock requires a distinct X.509 debug certificate (not the boot certificate) validated by
+> System Firmware, and unlock can be delivered either via a TISCI message or via the Secure Access
+> Point (Sec-AP) over the JTAG pins itself.
+
 ## 1. System Static Architecture
 
 ### 1.1 System entities
-- Authorized service/debug tool
+- Authorized service/debug tool (e.g., CCS with `dbgauth`, or a TISCI-capable host)
 - Vehicle gateway or direct service interface
-- TDA4VM debug authorization manager
-- Device lifecycle/policy authority
+- TDA4VM System Firmware (SYSFW/TIFS running on DMSC) acting as debug authorization authority
+- Device security configuration (efuse-programmed GP / HS-FS / HS-SE type, board configuration)
 - Secure logging and backend audit systems
 
 ### 1.2 Trust boundaries and interfaces
-- Boundary A: Tool domain to ECU authorization interface
-- Boundary B: Authorization manager to hardware debug controller
-- Boundary C: Lifecycle/policy domain to runtime unlock decisions
+- Boundary A: Debug tool to Secure Access Point (Sec-AP) or TISCI message interface
+- Boundary B: System Firmware certificate validation to physical JTAG unlock action
+- Boundary C: eFuse/board-configuration policy to runtime unlock decision (`allow_jtag_unlock`,
+  `allow_wildcard_unlock`, `min_cert_rev`, `jtag_unlock_hosts`)
 - Boundary D: Debug state transitions to secure logging domain
 
 ```mermaid
 graph LR
-  Tool[Authorized Debug Tool] --> Auth[Debug Auth Service]
-  Auth --> Policy[Lifecycle/Policy Manager]
-  Policy --> Dbg[Debug Controller/JTAG]
-  Auth --> Log[Secure Logging]
+  Tool[Debug Tool - CCS/dbgauth or TISCI host] -->|X.509 debug cert| SecAP[Sec-AP over JTAG or TISCI msg]
+  SecAP --> SF[System Firmware / TIFS on DMSC]
+  SF -->|Validate cert vs eFuse SMPK/BMPK + board cfg| Dbg[JTAG/Debug Controller]
+  SF --> Log[Secure Logging]
   Log --> Backend[Audit Backend]
 ```
 
@@ -32,40 +39,58 @@ graph LR
 ## 2. Hardware Static Architecture
 
 ### 2.1 Hardware elements
-- MCU main processing domain
-- Debug/JTAG controller and TAP interface
-- Boot ROM and lifecycle-state anchors
-- HSM/secure policy enforcement block
-- Non-volatile policy/configuration storage
+- JTAG TAP and Secure Access Point (Sec-AP): allows reading/writing System Firmware even while
+  the JTAG port itself is locked
+- DMSC (Cortex-M3 running System Firmware/TIFS), which owns the debug-unlock decision
+- eFuse array: device security type (GP/HS-FS/HS-SE), SMPK/BMPK key hash, JTAG permanently-disabled
+  flag (set via `TISCI_MSG_DISABLE_JTAG_UNLOCK`)
+- Core-level debug gating for A72/R5F/DSP cores, independent from the M3/DMSC debug gate
 
 ### 2.2 Hardware responsibility mapping
-- HWR-JTAG-1: Lifecycle state enforces production debug lock
-- HWR-JTAG-2: Debug transitions are policy-gated
-- HWR-JTAG-3: Reset defaults to locked/non-invasive mode
+- Default JTAG state is defined per device security type, not a single fixed default:
+
+| Device type | M3/DMSC JTAG | Other core JTAG |
+|---|---|---|
+| General Purpose (GP) | Open | Open |
+| HS - Field Securable (HS-FS) | Closed | Open |
+| HS - Security Enforced (HS-SE) | Closed | Closed |
+
+  (HWR-JTAG-1, HWR-JTAG-3 — corrected: only HS-SE is closed-by-default for all cores; HS-FS
+  leaves non-M3 cores open until the customer's own policy locks them down)
+- The M3/DMSC JTAG path can never be opened by software on HS-FS or HS-SE devices (HWR-JTAG-2)
+- JTAG unlock can be permanently and irreversibly disabled by blowing an efuse via
+  `TISCI_MSG_DISABLE_JTAG_UNLOCK` (production end-of-life debug lockout)
 
 ## 3. Software Static Architecture
 
 ### 3.1 Software blocks
-- Diagnostic authentication workflow
-- Debug authorization policy evaluator
-- Privilege/session scope manager
-- Lockout/backoff and retry counter manager
-- Secure logging interface for debug events
+- Debug certificate generator (offline, OEM-side): builds an X.509 certificate with the
+  System Firmware Debug Extension (`debugUID`, `debugType`, `coreDbgEn`, `coreDbgSecEn`) and the
+  System Firmware Software Revision Extension, signed with SMPK or BMPK private key
+- System Firmware (TIFS) certificate validator: checks signature vs eFuse key hash, certificate
+  revision vs `min_cert_rev`, UID match vs actual SoC UID (unless wildcard explicitly allowed),
+  and validity/support of requested debug privilege level and core list
+- Delivery path: `TISCI_MSG_OPEN_DEBUG_FWLS` (TISCI message) or Sec-AP transfer over JTAG (used by
+  CCS `dbgauth` tool)
+- Secure logging interface for unlock/deny/lockout events
 
 ```mermaid
 graph LR
-  Diag[Diag/Auth Service] --> Eval[Authorization Evaluator]
-  Eval --> Scope[Privilege/Session Manager]
-  Scope --> JTAG[JTAG Control Adapter]
-  Eval --> Lock[Lockout/Backoff Manager]
-  Scope --> Log[Secure Logging]
+  Cert[Debug Cert Generator - OEM offline] --> Deliver[TISCI msg or Sec-AP/JTAG delivery]
+  Deliver --> Val[TIFS Certificate Validator]
+  Val --> Priv[Debug Privilege / Core Scope]
+  Priv --> JTAG[JTAG Unlock Action]
+  Val --> Log[Secure Logging]
 ```
 
 ### 3.2 Software requirement allocation
-- SWR-JTAG-1: No raw JTAG enable in normal sessions
-- SWR-JTAG-2: Validate credentials/role/expiry before grant
-- SWR-JTAG-3: Revoke privileges on timeout/reset
-- SWR-JTAG-4: Log unlock, failure, lockout, revoke events
+- SWR-JTAG-1: No raw/unauthenticated JTAG enable path exists in production firmware
+- SWR-JTAG-2: Validate signature, certificate revision (`min_cert_rev`), SoC UID (unless
+  wildcard allowed for non-production use only), and requested debug scope before unlock
+- SWR-JTAG-3: Wildcard UID unlock (skips per-device UID match) must never be enabled with
+  production signing keys — development/lab use only
+- SWR-JTAG-4: Emit a security event for unlock success, validation failure, and any
+  `TISCI_MSG_DISABLE_JTAG_UNLOCK` permanent-lockout action
 
 ## 4. Dynamic / Behavioral Views
 
@@ -73,24 +98,32 @@ graph LR
 
 ```mermaid
 sequenceDiagram
-  participant T as Service Tool
-  participant A as Auth Service
-  participant P as Policy Manager
+  participant T as Debug Tool (dbgauth/TISCI host)
+  participant S as Sec-AP / TISCI transport
+  participant F as System Firmware (TIFS)
   participant J as JTAG Controller
   participant L as Secure Logging
 
-  T->>A: Unlock request + credentials
-  A->>P: Validate lifecycle + role + time policy
-  alt Authorized
-    P->>J: Enable scoped debug profile
-    A->>L: Log unlock success
-  else Denied
-    P->>A: Deny + backoff/lockout state
-    A->>L: Log failure/lockout event
+  T->>S: Deliver X.509 debug certificate (debugUID, debugType, coreDbgEn/SecEn, SWREV ext)
+  S->>F: Forward certificate for validation
+  F->>F: Verify signature vs eFuse SMPK/BMPK hash
+  F->>F: Check cert revision >= min_cert_rev, UID match (or wildcard policy), scope validity
+  alt Valid
+    F->>J: Unlock requested cores at requested debug level
+    F->>L: Log unlock success
+  else Invalid
+    F->>L: Log validation failure
+    F-->>T: Deny unlock
   end
 ```
 
 ### 4.2 Behavioral requirement focus
-- Locked-by-default production posture is always enforced (CSR-JTAG-2, FCR-JTAG-1)
-- Authentication and authorization are separate decisions (FCR-JTAG-2)
-- Re-authentication and revocation occur on reset/timeout/escalation (FCR-JTAG-4, SWR-JTAG-3)
+- Debug unlock is always certificate-based (X.509, RSA-signed), never a static password or
+  shared secret (CSR-JTAG-1)
+- HS-SE production devices are closed-by-default for all cores; HS-FS devices are closed only
+  for the M3/DMSC core by default — the OEM's own board configuration and provisioning must
+  close the remaining cores for a production posture (CSR-JTAG-2, FCR-JTAG-1)
+- Debug scope (which cores, which privilege level) is explicitly encoded per-certificate via
+  `coreDbgEn`/`coreDbgSecEn`/`debugType`, giving least-privilege debug profiles (FCR-JTAG-3)
+- Every unlock attempt, success, or failure is logged; JTAG can be permanently disabled via
+  efuse for end-of-life production lockout (CSR-JTAG-3, TCR-JTAG-3)

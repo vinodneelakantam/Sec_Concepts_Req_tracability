@@ -33,17 +33,17 @@ graph LR
 ## 2. Hardware Static Architecture
 
 ### 2.1 Hardware elements
-- MCU compute domain (R5F/A72 as applicable)
-- HSM/SA2UL crypto acceleration path
-- Boot ROM root-of-trust
+- TDA4VM (J721E) compute domain: Cortex-A72 (HLOS), Cortex-R5F (SBL/real-time), DMSC (Cortex-M3 running System Firmware/TIFS)
+- SA2UL crypto accelerator for signature/hash operations
+- DMSC immutable BootROM + eFuse-held SMPK/BMPK key hash and SWREV anti-rollback counter
 - Non-volatile flash (active image, candidate image, metadata)
-- JTAG/debug interface (production locked policy)
+- JTAG/Sec-AP debug interface (locked per device security type, see Secure JTAG doc)
 - Communication peripherals (CAN/Ethernet)
 
 ### 2.2 Hardware responsibility mapping
-- HWR-OTA-1: Hardware-backed identity and credential protection
-- HWR-OTA-2: Crypto throughput sufficient for signature/hash verification
-- TCR-OTA-2/TCR-OTA-3: Verification and activation depend on Boot ROM + secure boot chain
+- HWR-OTA-1: eFuse-anchored device identity/root keys back backend trust establishment
+- HWR-OTA-2: SA2UL throughput sufficient for signature/hash verification at OTA scale
+- TCR-OTA-2/TCR-OTA-3: Verification and activation depend on the DMSC BootROM -> TIFS -> SBL secure boot chain (see Secure Boot doc)
 
 ## 3. Software Static Architecture
 

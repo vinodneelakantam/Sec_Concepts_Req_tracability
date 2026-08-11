@@ -33,16 +33,16 @@ graph LR
 ## 2. Hardware Static Architecture
 
 ### 2.1 Hardware elements
-- MCU update control and flash programming domain
-- SA2UL/HSM cryptographic acceleration
-- Boot ROM trust anchor and lifecycle controls
+- TDA4VM (J721E) update control and flash programming domain: Cortex-R5F (SBL/flashing), DMSC (System Firmware/TIFS)
+- SA2UL cryptographic acceleration for signature/hash verification
+- DMSC BootROM trust anchor re-entered at every activation reset
 - Flash layout for active/candidate image separation
-- Monotonic anti-rollback source (SWREV/eFuse)
+- Monotonic anti-rollback source: eFuse SWREV counter checked by System Firmware
 
 ### 2.2 Hardware responsibility mapping
 - HWR-SRP-1: Active/candidate image separation with atomic metadata updates
-- HWR-SRP-2: Boot trust anchor enforces activation authenticity checks
-- TCR-SRP-2: Monotonic anti-rollback policy anchored in hardware trust chain
+- HWR-SRP-2: DMSC BootROM + System Firmware enforce activation authenticity checks
+- TCR-SRP-2: eFuse SWREV anti-rollback policy anchored in the hardware trust chain
 
 ## 3. Software Static Architecture
 

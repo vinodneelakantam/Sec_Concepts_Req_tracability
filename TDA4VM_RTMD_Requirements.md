@@ -33,12 +33,12 @@ graph LR
 ## 2. Hardware Static Architecture
 
 ### 2.1 Hardware elements
-- MCU execution domains
-- SA2UL/HSM-assisted hash and crypto path
-- Boot ROM and secure boot anchor
+- TDA4VM (J721E) execution domains: Cortex-A72, Cortex-R5F, DMSC (System Firmware/TIFS)
+- SA2UL hash/crypto accelerator used for runtime re-hashing
+- DMSC BootROM and secure boot chain as the trust anchor the monitor extends at runtime
 - Flash/NvM for reference values and evidence persistence
 - Reset/watchdog/status peripherals
-- Debug interface state indicators
+- JTAG/Sec-AP debug interface state indicators
 
 ### 2.2 Hardware responsibility mapping
 - HWR-RTMD-1: Hardware crypto supports periodic integrity checks

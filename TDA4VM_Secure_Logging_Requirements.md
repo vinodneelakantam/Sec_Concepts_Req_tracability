@@ -32,8 +32,8 @@ graph LR
 ## 2. Hardware Static Architecture
 
 ### 2.1 Hardware elements
-- MCU execution domain for log services
-- SA2UL crypto path for integrity tags
+- TDA4VM (J721E) execution domain for log services: Cortex-A72/R5F application cores
+- SA2UL crypto path for integrity tag generation
 - Persistent flash/NvM partitions for secure retention
 - Storage controller path with recoverable write guarantees
 - Communication peripherals for authenticated export

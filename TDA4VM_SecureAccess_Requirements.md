@@ -32,11 +32,11 @@ graph LR
 ## 2. Hardware Static Architecture
 
 ### 2.1 Hardware elements
-- MCU and peripheral control domain
-- SA2UL crypto acceleration support
-- Secure key storage/provisioning anchor
-- Boot ROM + lifecycle state controls
-- JTAG/debug state controls affecting access policy
+- TDA4VM (J721E) processing domain: Cortex-A72/R5F application cores plus DMSC (System Firmware/TIFS)
+- SA2UL crypto acceleration support for challenge-response operations
+- eFuse-anchored key storage (SMPK/BMPK) via System Firmware provisioning services
+- DMSC BootROM + device security type (GP/HS-FS/HS-SE) constrain which access levels are possible
+- JTAG/Sec-AP debug state controls affecting access policy (see Secure JTAG doc)
 
 ### 2.2 Hardware responsibility mapping
 - HWR-SA-1: Auth timing targets met through crypto acceleration
