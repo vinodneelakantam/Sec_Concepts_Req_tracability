@@ -1,3 +1,9 @@
+---
+layout: default
+title: Secure Logging
+nav_title: Secure Logging
+---
+
 # Secure Logging Architecture Requirements - TDA4VM ADAS ECU
 
 ## 1. Functional Security Concept

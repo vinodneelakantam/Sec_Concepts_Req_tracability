@@ -1,3 +1,9 @@
+---
+layout: default
+title: Secure JTAG and Debug Control
+nav_title: JTAG
+---
+
 # Secure JTAG and Debug Control Architecture Requirements - TDA4VM ADAS ECU
 
 > Grounded in the TI TISCI "Secure Debug User Guide" for K3 devices (which includes TDA4VM/J721E).

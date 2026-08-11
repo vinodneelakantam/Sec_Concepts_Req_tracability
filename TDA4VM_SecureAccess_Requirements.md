@@ -1,3 +1,9 @@
+---
+layout: default
+title: Secure Access (Diagnostics and Protected Services)
+nav_title: Secure Access
+---
+
 # Secure Access (Diagnostics and Protected Services) Architecture Requirements - TDA4VM ADAS ECU
 
 ## 1. Functional Security Concept

@@ -1,3 +1,9 @@
+---
+layout: default
+title: Secure Reprogramming
+nav_title: Reprogramming
+---
+
 # Secure Reprogramming Architecture Requirements - TDA4VM ADAS ECU
 
 ## 1. Functional Security Concept

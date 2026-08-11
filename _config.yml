@@ -1,0 +1,23 @@
+title: TDA4VM ADAS ECU Cybersecurity Requirements
+description: >-
+  Automotive cybersecurity requirements engineering for a TDA4VM (TI Jacinto 7 / J721E)
+  ADAS ECU: secure boot, JTAG/debug, secure access, secure communication, secure logging,
+  OTA/FOTA/SOTA, secure reprogramming, runtime tamper monitoring, and secure storage.
+baseurl: "/Sec_Concepts_Req_tracability"
+url: "https://vinodneelakantam.github.io"
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  hard_wrap: false
+defaults:
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: default
+exclude:
+  - README.md
+  - node_modules
+  - Gemfile
+  - Gemfile.lock

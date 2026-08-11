@@ -1,3 +1,9 @@
+---
+layout: default
+title: Secure Storage
+nav_title: Secure Storage
+---
+
 # Secure Storage Architecture Requirements - TDA4VM ADAS ECU
 
 ## 1. Functional Security Concept

@@ -1,3 +1,9 @@
+---
+layout: default
+title: Secure Communication
+nav_title: Secure Comm
+---
+
 # Secure Communication Architecture Requirements - TDA4VM ADAS ECU
 
 ## 1. Functional Security Concept

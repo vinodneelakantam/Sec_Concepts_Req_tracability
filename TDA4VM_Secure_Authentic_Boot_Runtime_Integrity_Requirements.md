@@ -1,3 +1,9 @@
+---
+layout: default
+title: Secure and Authentic Boot with Runtime Integrity
+nav_title: Secure Boot
+---
+
 # Secure and Authentic Boot with Runtime Integrity Architecture Requirements - TDA4VM ADAS ECU
 
 > Grounded in TI Jacinto 7 / TDA4VM (J721E) documentation: TISCI User Guide (System Firmware

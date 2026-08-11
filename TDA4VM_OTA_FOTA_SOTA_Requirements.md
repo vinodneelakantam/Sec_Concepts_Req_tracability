@@ -1,3 +1,9 @@
+---
+layout: default
+title: OTA/FOTA/SOTA Security Architecture Requirements
+nav_title: OTA/FOTA/SOTA
+---
+
 # OTA/FOTA/SOTA Security Architecture Requirements - TDA4VM ADAS ECU
 
 ## 1. Functional Security Concept

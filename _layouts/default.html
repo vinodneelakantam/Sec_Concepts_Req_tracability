@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 4rem;
+      line-height: 1.6;
+    }
+    header.site-nav {
+      border-bottom: 1px solid #d0d7de;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+    }
+    header.site-nav a.brand {
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 1.05rem;
+    }
+    header.site-nav nav {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+    header.site-nav nav a { margin-right: 0.9rem; }
+    pre { background: #f6f8fa; padding: 0.9rem; overflow-x: auto; border-radius: 6px; }
+    code { background: #f6f8fa; padding: 0.15rem 0.35rem; border-radius: 4px; }
+    pre code { background: none; padding: 0; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th, td { border: 1px solid #d0d7de; padding: 0.4rem 0.6rem; text-align: left; }
+    th { background: #f6f8fa; }
+    .mermaid { background: #fff; }
+    footer { margin-top: 3rem; font-size: 0.85rem; color: #57606a; }
+  </style>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
+    document.querySelectorAll("pre > code.language-mermaid").forEach((codeEl) => {
+      const container = document.createElement("div");
+      container.className = "mermaid";
+      container.textContent = codeEl.textContent;
+      codeEl.parentElement.replaceWith(container);
+    });
+    mermaid.run({ querySelector: ".mermaid" });
+  </script>
+</head>
+<body>
+  <header class="site-nav">
+    <a class="brand" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+    <nav>
+      <a href="{{ '/' | relative_url }}">Home</a>
+      {% for doc in site.static_files %}{% endfor %}
+      {% assign docs = site.pages | where_exp: "p", "p.name contains 'TDA4VM_'" | sort: "title" %}
+      {% for doc in docs %}<a href="{{ doc.url | relative_url }}">{{ doc.nav_title | default: doc.title }}</a>{% endfor %}
+    </nav>
+  </header>
+  <main>
+    {{ content }}
+  </main>
+  <footer>
+    Source: <a href="https://github.com/vinodneelakantam/Sec_Concepts_Req_tracability">GitHub repository</a>
+  </footer>
+</body>
+</html>
