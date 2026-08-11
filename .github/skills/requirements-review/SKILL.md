@@ -17,7 +17,7 @@ For each doc, confirm all of these headings exist, in order, with a mermaid bloc
 ## 1. System Static Architecture
 ### 1.1 System entities
 ### 1.2 Trust boundaries and interfaces        <- must contain a ```mermaid graph LR``` block
-### 1.3 System-level requirement allocation    <- full CSR/FCR/TCR text under bold subheadings
+### 1.3 System-level requirement allocation    <- full CSR/FSC/FSR/FCR/TCR text under bold subheadings
 ## 2. Hardware Static Architecture
 ### 2.1 Hardware elements
 ### 2.2 Hardware responsibility mapping
@@ -32,12 +32,12 @@ Flag: missing sections, sections out of order, or a `1.3`/`3.1`/`4.1` missing it
 
 ### 2. No bare ID ranges (hard rule)
 Search each file's Section 1.3 for a bare range pattern instead of spelled-out text, e.g.
-`CSR-XXX-1 to CSR-XXX-5` or `CSR-XXX-1..5`. This is an automatic fail — every CSR/FCR/TCR must be
-its own full sentence under a bold heading.
+`CSR-XXX-1 to CSR-XXX-5` or `CSR-XXX-1..5`. This is an automatic fail — every CSR/FSC/FSR/FCR/TCR
+must be its own full sentence under a bold heading.
 
 ### 3. ID taxonomy consistency within a file
-- Every doc should define at least one `CSR-*`, `FCR-*`, `TCR-*` (Section 1.3), `HWR-*` (2.2), and
-  `SWR-*` (3.2) — flag any doc missing one of these five categories entirely.
+- Every doc should define at least one `CSR-*`, `FSC-*`, `FSR-*`, `FCR-*`, `TCR-*` (Section 1.3),
+  `HWR-*` (2.2), and `SWR-*` (3.2) — flag any doc missing one of these seven categories entirely.
 - IDs within a file must use one consistent topic suffix (e.g., all `CSR-STO-*`, not a mix of
   `CSR-STO-*` and `CSR-STOR-*`).
 - ID numbers should be contiguous/sequential within a category, starting at 1, with no gaps or
@@ -47,7 +47,7 @@ its own full sentence under a bold heading.
 Extract every requirement ID across all files and check for accidental collisions (two different
 docs both claiming `CSR-STO-1`, for instance, other than the intentionally bare-suffix boot doc):
 ```bash
-grep -n -oE '(CSR|FCR|TCR|HWR|SWR)-[A-Z]*-?[0-9]+' TDA4VM_*_Requirements.md | sort -t: -k2
+grep -n -oE '(CSR|FSC|FSR|FCR|TCR|HWR|SWR)-[A-Z]*-?[0-9]+' TDA4VM_*_Requirements.md | sort -t: -k2
 ```
 Any ID string appearing under two different topic suffixes with the same file scope is a bug.
 

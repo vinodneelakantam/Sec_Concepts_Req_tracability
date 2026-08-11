@@ -34,6 +34,18 @@ graph LR
 - CSR-COM-4: Invalid security metadata shall result in fail-closed behavior for critical paths.
 - CSR-COM-5: Key lifecycle controls shall support rotation/revocation without policy gaps.
 
+**Functional Security Concept (FSC)**
+- FSC-COM-1: Protect messages using a combination tailored to their exposure - authenticity/integrity for control-relevant traffic, confidentiality additionally for sensitive payloads.
+- FSC-COM-2: Treat freshness/replay protection as mandatory alongside authenticity, since a valid-but-replayed message is still an attack.
+- FSC-COM-3: Fail closed on any security-metadata anomaly for critical flows rather than degrading silently to unauthenticated behavior.
+
+**Functional Security Requirements (FSR)**
+- FSR-COM-1: A critical message shall be rejected by the receiver if its source cannot be authenticated or its integrity cannot be verified.
+- FSR-COM-2: A sensitive payload shall only be transmitted over a channel providing confidentiality protection appropriate to its classification.
+- FSR-COM-3: Each protected message shall carry a freshness indicator checked independently of its authenticity tag, and stale or reused values shall be rejected.
+- FSR-COM-4: Invalid or missing security metadata on a critical flow shall result in the message being discarded, never processed with reduced trust.
+- FSR-COM-5: Key rotation or revocation shall take effect without a window in which both old and new keys are simultaneously accepted beyond a defined transition policy.
+
 **Functional Cybersecurity Concept (FCR)**
 - FCR-COM-1: Apply protocol-appropriate protection profile per channel.
 - FCR-COM-2: Enforce receiver-side verification before handing data to application logic.

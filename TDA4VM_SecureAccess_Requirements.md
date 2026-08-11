@@ -33,6 +33,18 @@ graph LR
 - CSR-SA-4: Access rights shall be role/session specific.
 - CSR-SA-5: Elevated access shall expire automatically and require re-authentication.
 
+**Functional Security Concept (FSC)**
+- FSC-SA-1: Require successful, freshness-protected authentication before granting access to any protected diagnostic service.
+- FSC-SA-2: Bound elevated access in both scope (role/session) and time, so a granted session cannot be reused indefinitely or beyond its intended purpose.
+- FSC-SA-3: Resist brute-force attempts through graded delay/lockout rather than a fixed, guessable retry limit alone.
+
+**Functional Security Requirements (FSR)**
+- FSR-SA-1: A protected diagnostic service shall refuse execution unless the requesting session has completed successful security access for that service's required level.
+- FSR-SA-2: The authentication challenge/response exchange shall include a freshness value and shall reject any replayed exchange.
+- FSR-SA-3: A failed security access attempt shall be logged and shall count toward a defined lockout/backoff policy before further attempts are permitted.
+- FSR-SA-4: Granted access rights shall be scoped to the specific role and session that obtained them, not shared across sessions.
+- FSR-SA-5: Elevated access shall expire automatically after a defined condition (timeout, session end, reset) and shall require re-authentication thereafter.
+
 **Functional Cybersecurity Concept (FCR)**
 - FCR-SA-1: Separate authentication (identity proof) from authorization (service scope).
 - FCR-SA-2: Enforce deny-by-default for protected services when access state is invalid.

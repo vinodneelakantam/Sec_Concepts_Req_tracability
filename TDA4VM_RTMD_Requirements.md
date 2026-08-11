@@ -34,6 +34,18 @@ graph LR
 - CSR-RTMD-4: Monitoring shall combine periodic checks and event-triggered checks.
 - CSR-RTMD-5: Response actions shall be coordinated with safety management logic.
 
+**Functional Security Concept (FSC)**
+- FSC-RTMD-1: Combine continuous (periodic) and event-triggered detection so that both slow-drift tampering and sudden anomalies are caught.
+- FSC-RTMD-2: Scale the response to the confidence and severity of what was detected, rather than a single fixed reaction for every anomaly.
+- FSC-RTMD-3: Preserve a forensic trail from first detection through the action finally taken, so incidents remain analyzable after the fact.
+
+**Functional Security Requirements (FSR)**
+- FSR-RTMD-1: Defined code, data, and control-flow indicators shall be evaluated on both a periodic schedule and in response to specific trigger events.
+- FSR-RTMD-2: Each detection shall be classified by severity/confidence and mapped to a predetermined response tier before any action is taken.
+- FSR-RTMD-3: Detection evidence (indicator, timestamp, context) shall be captured and retained independently of whether the response mitigates the condition.
+- FSR-RTMD-4: Both periodic and event-triggered monitoring paths shall feed the same classification and response logic, avoiding duplicated or conflicting handling.
+- FSR-RTMD-5: A response action affecting vehicle behavior shall be coordinated with safety state management before being applied.
+
 **Functional Cybersecurity Concept (FCR)**
 - FCR-RTMD-1: Combine periodic integrity checks with trigger-based checks (reset anomalies, debug-state changes, repeated auth anomalies).
 - FCR-RTMD-2: Apply deterministic policy mapping from detection class to response tier.

@@ -33,6 +33,18 @@ graph LR
 - CSR-LOG-4: Time/counter context shall support event sequencing and cross-source correlation.
 - CSR-LOG-5: Exported logs shall maintain provenance and integrity metadata.
 
+**Functional Security Concept (FSC)**
+- FSC-LOG-1: Make tampering with recorded security events detectable rather than merely difficult.
+- FSC-LOG-2: Differentiate handling by event criticality so high-value evidence survives storage/retention pressure that lower-value events do not.
+- FSC-LOG-3: Preserve enough context (time/sequence/source) to reconstruct a cross-component incident timeline.
+
+**Functional Security Requirements (FSR)**
+- FSR-LOG-1: Each security-relevant event shall be recorded with integrity protection sufficient to detect any later modification or deletion.
+- FSR-LOG-2: Retention and rotation policy shall guarantee that high-criticality events are not overwritten before lower-criticality events under storage pressure.
+- FSR-LOG-3: Fields containing sensitive/private data shall be minimized, masked, or protected consistent with defined privacy policy before storage or export.
+- FSR-LOG-4: Every logged event shall carry a time or counter reference sufficient to order it relative to events from other sources.
+- FSR-LOG-5: An exported log record shall retain provenance and integrity metadata usable to verify it was not altered after export.
+
 **Functional Cybersecurity Concept (FCR)**
 - FCR-LOG-1: Use tamper-evident record chaining or signed batches.
 - FCR-LOG-2: Define severity classes with differentiated retention and upload behavior.

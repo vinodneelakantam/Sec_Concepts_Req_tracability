@@ -1,6 +1,6 @@
 ---
 name: traceability-matrix
-description: 'Generate or refresh a cross-document requirement traceability matrix for the TDA4VM ADAS ECU cybersecurity requirements repo, mapping CSR/FCR/TCR/SWR/HWR IDs across all TDA4VM_*_Requirements.md files and flagging orphaned or undeclared requirement IDs. Use when the user asks for a traceability matrix, RTM, requirement coverage table, or "how do requirements map across documents".'
+description: 'Generate or refresh a cross-document requirement traceability matrix for the TDA4VM ADAS ECU cybersecurity requirements repo, mapping CSR/FSC/FSR/FCR/TCR/SWR/HWR IDs across all TDA4VM_*_Requirements.md files and flagging orphaned or undeclared requirement IDs. Use when the user asks for a traceability matrix, RTM, requirement coverage table, or "how do requirements map across documents".'
 ---
 
 # Cross-Document Traceability Matrix (TDA4VM ADAS ECU)
@@ -15,12 +15,12 @@ inference when presenting the matrix — it is not a formally-linked RTM.
 
 1. **Extract every requirement ID and its text** from each `TDA4VM_*_Requirements.md`:
    ```bash
-   grep -n -E '^- (CSR|FCR|TCR|HWR|SWR)-' TDA4VM_*_Requirements.md
+   grep -n -E '^- (CSR|FSC|FSR|FCR|TCR|HWR|SWR)-' TDA4VM_*_Requirements.md
    ```
 2. **Build the per-document summary table**:
 
-   | Doc | Topic suffix | CSR count | FCR count | TCR count | HWR count | SWR count |
-   |---|---|---|---|---|---|---|
+   | Doc | Topic suffix | CSR count | FSC count | FSR count | FCR count | TCR count | HWR count | SWR count |
+   |---|---|---|---|---|---|---|---|---|
 
 3. **Build the ID-level matrix** per document, one row per CSR, showing which FCR/TCR/SWR/HWR IDs
    were cited alongside it in `4.2` (this is the closest thing this repo has to a "supports" link):

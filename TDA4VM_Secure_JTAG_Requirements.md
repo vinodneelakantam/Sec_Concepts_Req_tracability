@@ -40,6 +40,18 @@ graph LR
 - CSR-JTAG-4: Debug privileges shall be bounded by explicit per-certificate core scope and privilege level.
 - CSR-JTAG-5: Debug certificates shall enforce a minimum certificate revision (`min_cert_rev`) to prevent replay of older unlock certificates.
 
+**Functional Security Concept (FSC)**
+- FSC-JTAG-1: Require cryptographic proof of authorization for any debug capability, replacing static or shared secrets entirely.
+- FSC-JTAG-2: Default to closed debug access in production, opening only the minimum scope and privilege actually requested and justified.
+- FSC-JTAG-3: Make every debug-state transition an auditable, integrity-protected event.
+
+**Functional Security Requirements (FSR)**
+- FSR-JTAG-1: A debug session shall not be granted unless a valid, cryptographically verifiable authorization credential is presented for that request.
+- FSR-JTAG-2: In production lifecycle state, debug interfaces shall remain closed until explicitly and validly unlocked, consistent with the device's configured security posture.
+- FSR-JTAG-3: A debug credential shall grant access only to the specific cores and privilege level it explicitly encodes, never a broader scope.
+- FSR-JTAG-4: Debug unlock attempts, successes, failures, and resulting state changes shall be recorded with integrity protection.
+- FSR-JTAG-5: A debug credential older than the currently enforced minimum revision shall be rejected, preventing reuse of a superseded authorization.
+
 **Functional Cybersecurity Concept (FCR)**
 - FCR-JTAG-1: Enforce closed-by-default debug posture per device security type in production (see HS-FS/HS-SE table in Section 2.2).
 - FCR-JTAG-2: Separate certificate signature/UID validation (authentication) from the encoded debug privilege level and core scope (authorization).

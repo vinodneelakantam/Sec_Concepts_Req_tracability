@@ -34,6 +34,18 @@ graph LR
 - CSR-SRP-4: Activation reset shall pass through the standard secure boot chain.
 - CSR-SRP-5: Update metadata shall include compatibility/dependency policy inputs.
 
+**Functional Security Concept (FSC)**
+- FSC-SRP-1: Separate delivery, verification, and activation into distinct stages so a failure at any stage cannot silently proceed to the next.
+- FSC-SRP-2: Never allow the currently active, known-good image to be overwritten until a candidate image is fully verified.
+- FSC-SRP-3: Reuse the same trust chain for post-update activation as for ordinary boot, rather than a reduced-check path.
+
+**Functional Security Requirements (FSR)**
+- FSR-SRP-1: A downloaded image shall be authenticated and integrity-checked before it is committed as the active image.
+- FSR-SRP-2: An image whose version fails the anti-rollback policy shall be rejected regardless of otherwise-valid signature/integrity.
+- FSR-SRP-3: An interruption during the flashing process shall leave the ECU able to boot a known-valid image, never an undefined or partially written one.
+- FSR-SRP-4: The activation reset following reprogramming shall pass through the same verification chain used at ordinary power-on.
+- FSR-SRP-5: Update metadata shall be checked against target identity, dependency, and version-compatibility policy before activation is permitted.
+
 **Functional Cybersecurity Concept (FCR)**
 - FCR-SRP-1: Use staged workflow (download, verify, commit, activate).
 - FCR-SRP-2: Keep active and candidate images separable with explicit commit decision.

@@ -1,6 +1,6 @@
 ---
 name: requirements-doc-scaffolding
-description: 'Scaffold a brand-new TDA4VM ADAS ECU cybersecurity requirements topic document (like TDA4VM_Secure_Storage_Requirements.md) end-to-end: pick a topic and unique ID suffix, fetch/verify grounding facts from TI TISCI docs, author all 4 structural views with full CSR/FCR/TCR/SWR/HWR requirement text, author and validate Mermaid diagrams, then update repo bookkeeping. Use when the user says things like "introduce a new security concept", "add a new requirements doc/topic", or "we need requirements for X" in this repo.'
+description: 'Scaffold a brand-new TDA4VM ADAS ECU cybersecurity requirements topic document (like TDA4VM_Secure_Storage_Requirements.md) end-to-end: pick a topic and unique ID suffix, fetch/verify grounding facts from TI TISCI docs, author all 4 structural views with full CSR/FSC/FSR/FCR/TCR/SWR/HWR requirement text, author and validate Mermaid diagrams, then update repo bookkeeping. Use when the user says things like "introduce a new security concept", "add a new requirements doc/topic", or "we need requirements for X" in this repo.'
 ---
 
 # Requirements Doc Scaffolding (TDA4VM ADAS ECU)
@@ -24,13 +24,14 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
 3. **Create `TDA4VM_<Topic>_Requirements.md`** at the workspace root, following the exact 4-view
    structure from the domain skill:
    - `## 1. System Static Architecture` → `1.1` entities, `1.2` trust boundaries + `graph LR`
-     mermaid, `1.3` full CSR/FCR/TCR requirement text (never bare ID ranges)
+     mermaid, `1.3` full CSR/FSC/FSR/FCR/TCR requirement text (never bare ID ranges)
    - `## 2. Hardware Static Architecture` → `2.1` elements, `2.2` HWR mapping
    - `## 3. Software Static Architecture` → `3.1` blocks + `graph LR` mermaid, `3.2` SWR mapping
    - `## 4. Dynamic / Behavioral Views` → `4.1` `sequenceDiagram` with explicit `alt`/`opt` failure
      branches, `4.2` behavioral bullets each citing at least one CSR/FCR/TCR/SWR/HWR ID
-4. **Write Section 1.3 in full sentences** under bold `**CSR**`/`**FCR**`/`**TCR**` subheadings —
-   collapsing to `CSR-XXX-1 to CSR-XXX-5` fails review (see requirements-review skill).
+4. **Write Section 1.3 in full sentences** under bold `**CSR**`/`**FSC**`/`**FSR**`/`**FCR**`/`**TCR**`
+   subheadings, in that order — collapsing to `CSR-XXX-1 to CSR-XXX-5` fails review (see
+   requirements-review skill).
 5. **Author diagrams following the Mermaid authoring rules** in the domain skill (no semicolons in
    message text, no reserved words as aliases, no embedded arrows in message text, `graph LR` not
    `flowchart LR`, every `alt`/`opt`/`loop` closed).

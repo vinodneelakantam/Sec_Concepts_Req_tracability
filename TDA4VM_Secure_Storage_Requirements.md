@@ -40,6 +40,19 @@ graph LR
 - CSR-STO-5: Provisioning (initial write) of long-term secret material shall be a one-time, auditable operation that cannot be silently repeated or overwritten by an untrusted host.
 - CSR-STO-6: Compromise or disclosure of one stored secret shall not enable derivation of other, unrelated stored secrets (key separation).
 
+**Functional Security Concept (FSC)**
+- FSC-STO-1: Anchor confidentiality of every stored secret in a hardware-unique root so extraction from one device yields nothing usable elsewhere.
+- FSC-STO-2: Separate keys by purpose and owner so compromise of one secret cannot be leveraged to derive or expose another.
+- FSC-STO-3: Make provisioning of long-term secrets a one-time, tamper-evident event, and make every write to persistent secret storage resilient to interruption.
+
+**Functional Security Requirements (FSR)**
+- FSR-STO-1: A secret shall never be written to or read from non-volatile media in plaintext form.
+- FSR-STO-2: Decrypting a stored secret shall require key material that is unique to the originating device and unobtainable from another device's storage.
+- FSR-STO-3: A given secret or key shall be usable only by the specific host/core(s) authorized for it, not by any software running on the device.
+- FSR-STO-4: An interrupted write to secret storage shall leave either the previous valid secret or the new valid secret recoverable, never a corrupted or partially exposed intermediate state.
+- FSR-STO-5: Initial provisioning of long-term secret material shall be performed at most once per device and shall be verifiable as such.
+- FSR-STO-6: Disclosure of one stored secret shall not provide any computational advantage toward recovering another, unrelated stored secret.
+
 **Functional Cybersecurity Concept (FCR)**
 - FCR-STO-1: Anchor all higher-layer secret protection in a device-unique hardware root key that never leaves the SoC.
 - FCR-STO-2: Derive per-purpose, per-host storage keys from the hardware root key using a standard KDF with domain-separating label/context inputs, instead of reusing one key for all secrets.

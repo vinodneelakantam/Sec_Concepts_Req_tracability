@@ -42,6 +42,19 @@ graph LR
 - CSR-5: Gate post-reprogramming activation on the same trust chain used for ordinary power-on.
 - CSR-6: Cover runtime integrity monitoring across power-on, post-reprogramming, and other operational scenarios.
 
+**Functional Security Concept (FSC)**
+- FSC-1: Root every verification decision in a hardware-anchored, immutable first step, then propagate trust forward one stage at a time.
+- FSC-2: Treat boot-time verification and post-boot runtime verification as two distinct, complementary concepts rather than a single one-time gate.
+- FSC-3: Apply the identical trust chain regardless of whether the system is powering on normally or resuming after reprogramming.
+
+**Functional Security Requirements (FSR)**
+- FSR-1: Each boot stage shall verify the authenticity and integrity of the next stage's image before transferring control to it.
+- FSR-2: A verification failure at any boot stage shall be handled per that stage's defined strategy (halt/fallback for secure boot, measured-and-logged for authentic boot) rather than an ad hoc reaction.
+- FSR-3: The first verification step in the chain shall execute from immutable, hardware-resident code that cannot be altered by any software update.
+- FSR-4: Runtime integrity checks shall re-evaluate code/critical data after boot completes, independent of the boot-time result.
+- FSR-5: Activation following reprogramming shall invoke the same verification chain used at ordinary power-on, with no reduced-check shortcut.
+- FSR-6: Runtime monitoring shall remain active across power-on, post-reprogramming, and other operational scenarios without a coverage gap.
+
 **Functional Cybersecurity Concept (FCR)**
 - FCR-1: Each boot stage cryptographically verifies the next stage before it executes (chain of trust).
 - FCR-2: Boot failures halt/fall back (secure boot) or are measured and logged for deferred judgment (authentic boot) - the strategy is a deliberate choice, not interchangeable defaults.

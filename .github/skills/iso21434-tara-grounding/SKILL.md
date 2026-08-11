@@ -1,6 +1,6 @@
 ---
 name: iso21434-tara-grounding
-description: 'Ground new or existing TDA4VM ADAS ECU CSR/FCR/TCR requirements in ISO 21434 Threat Analysis and Risk Assessment (TARA) vocabulary: assets, damage scenarios, threat scenarios/attack paths, impact rating (Safety/Financial/Operational/Privacy), attack feasibility rating, and risk treatment. Use when the user asks to justify, motivate, add rationale to, or run a TARA/threat analysis for a requirement, or asks "why do we need this requirement".'
+description: 'Ground new or existing TDA4VM ADAS ECU CSR/FSC/FSR/FCR/TCR requirements in ISO 21434 Threat Analysis and Risk Assessment (TARA) vocabulary: assets, damage scenarios, threat scenarios/attack paths, impact rating (Safety/Financial/Operational/Privacy), attack feasibility rating, and risk treatment. Use when the user asks to justify, motivate, add rationale to, or run a TARA/threat analysis for a requirement, or asks "why do we need this requirement".'
 ---
 
 # ISO 21434 TARA Grounding (TDA4VM ADAS ECU)

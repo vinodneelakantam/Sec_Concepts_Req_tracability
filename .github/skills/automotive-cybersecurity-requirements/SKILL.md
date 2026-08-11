@@ -30,7 +30,7 @@ plausible-sounding invented one.
 ## 1. System Static Architecture
 ### 1.1 System entities
 ### 1.2 Trust boundaries and interfaces   (+ mermaid `graph LR`)
-### 1.3 System-level requirement allocation  <- full CSR/FCR/TCR text, NOT bare "ID-1 to ID-5" ranges
+### 1.3 System-level requirement allocation  <- full CSR/FSC/FSR/FCR/TCR text, NOT bare "ID-1 to ID-5" ranges
 ## 2. Hardware Static Architecture
 ### 2.1 Hardware elements
 ### 2.2 Hardware responsibility mapping
@@ -43,13 +43,18 @@ plausible-sounding invented one.
 ```
 
 Requirement ID taxonomy used consistently: **CSR** (Cybersecurity Requirement, item-level) →
-**FCR** (Functional Cybersecurity Concept) → **TCR** (Technical Cybersecurity Concept, TDA4VM-specific)
-→ **SWR** (Software Requirement) / **HWR** (Hardware Requirement). Each file uses a topic suffix,
-e.g. `CSR-SA-1` (Secure Access), `CSR-JTAG-1`, `CSR-OTA-1`, `CSR-SRP-1` (reprogramming), `CSR-RTMD-1`,
-`CSR-LOG-1`, `CSR-COM-1`, `CSR-STO-1` (secure storage), and the boot doc uses bare `CSR-1`/`FCR-1`/`TCR-1`.
+**FSC** (Functional Security Concept, the overarching strategy for realizing the CSRs) →
+**FSR** (Functional Security Requirements, decomposed testable functional requirements, still
+implementation-agnostic) → **FCR** (Functional Cybersecurity Concept) → **TCR** (Technical
+Cybersecurity Concept, TDA4VM-specific) → **SWR** (Software Requirement) / **HWR** (Hardware
+Requirement). Each file uses a topic suffix, e.g. `CSR-SA-1` (Secure Access), `CSR-JTAG-1`,
+`CSR-OTA-1`, `CSR-SRP-1` (reprogramming), `CSR-RTMD-1`, `CSR-LOG-1`, `CSR-COM-1`, `CSR-STO-1`
+(secure storage), with matching `FSC-<suffix>-n`/`FSR-<suffix>-n` IDs, and the boot doc uses bare
+`CSR-1`/`FSC-1`/`FSR-1`/`FCR-1`/`TCR-1`.
 
-**Rule:** Section 1.3 must always spell out full requirement text under `**CSR**`/`**FCR**`/`**TCR**`
-bold subheadings — never collapse to an ID range like "CSR-SA-1 to CSR-SA-5".
+**Rule:** Section 1.3 must always spell out full requirement text under
+`**CSR**`/`**FSC**`/`**FSR**`/`**FCR**`/`**TCR**` bold subheadings, in that order — never collapse
+to an ID range like "CSR-SA-1 to CSR-SA-5".
 
 ## Grounded TDA4VM/J721E facts (verified against TI TISCI documentation)
 

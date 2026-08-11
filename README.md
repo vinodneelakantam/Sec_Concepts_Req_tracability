@@ -21,6 +21,8 @@ four views:
 Requirements are layered per topic using a consistent ID taxonomy:
 
 - **CSR** - Cybersecurity Requirement (what must be true)
+- **FSC** - Functional Security Concept (the overarching strategy for realizing the CSRs)
+- **FSR** - Functional Security Requirements (decomposed, testable, still implementation-agnostic)
 - **FCR** - Functional Cybersecurity Concept (how, at a functional level)
 - **TCR** - Technical Cybersecurity Concept (how, at a concrete TI TDA4VM mechanism level)
 - **SWR** - Software Requirement

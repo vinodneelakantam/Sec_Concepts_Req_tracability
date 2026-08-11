@@ -34,6 +34,18 @@ graph LR
 - CSR-OTA-4: Resume/retry logic shall preserve end-to-end integrity guarantees.
 - CSR-OTA-5: Update outcomes shall be auditable and reportable.
 
+**Functional Security Concept (FSC)**
+- FSC-OTA-1: Realize update trust through two independent, layered checks - channel-level trust (who you're talking to) and content-level trust (what was delivered) - so compromise of either alone is insufficient to install unauthorized code.
+- FSC-OTA-2: Treat an update campaign as a policy-gated workflow (authorization, compatibility, resumability) rather than a bare file transfer, so partial/interrupted delivery cannot degrade end-to-end guarantees.
+- FSC-OTA-3: Make every campaign decision and outcome observable and auditable after the fact.
+
+**Functional Security Requirements (FSR)**
+- FSR-OTA-1: The update client shall reject any artifact whose signature or campaign authorization cannot be validated, before any part of it is applied.
+- FSR-OTA-2: The transport session shall be mutually authenticated and shall detect any tampering or eavesdropping attempt on transferred data.
+- FSR-OTA-3: Installation shall be preceded by an explicit compatibility/version check against the target ECU's identity and current state.
+- FSR-OTA-4: A resumed or retried transfer shall re-validate integrity of already-received and newly-received chunks rather than trusting prior partial progress unconditionally.
+- FSR-OTA-5: Every campaign decision (accepted, rejected, deferred) and installation outcome shall be recorded in a form retrievable for later audit.
+
 **Functional Cybersecurity Concept (FCR)**
 - FCR-OTA-1: Enforce both secure channel validation and package signature validation.
 - FCR-OTA-2: Apply manifest-based policy checks (target identity, dependencies, version bounds).
