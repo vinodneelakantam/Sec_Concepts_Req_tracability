@@ -6,6 +6,11 @@ nav_title: Secure Comm
 
 # Secure Communication Architecture Requirements - TDA4VM ADAS ECU
 
+This doc covers confidentiality-protected channels, shared key/policy management, and off-board
+(cloud/backend) sessions. Per-PDU in-vehicle authenticity/freshness protection (the AUTOSAR SecOC
+authentication pattern) is covered by its own dedicated doc,
+[TDA4VM_SecOC_Requirements.md](TDA4VM_SecOC_Requirements.md).
+
 ## 1. Functional Security Concept
 
 ### 1.1 Cybersecurity Requirements (CSR)
@@ -53,7 +58,7 @@ graph LR
 ```
 
 ### 2.3 System Requirements (SYSR)
-- SYSR-COM-1: Sender and Receiver ECU domains shall exchange protected messages only through the Freshness Manager/Key-Session Manager boundary (Boundary C), never applying protection ad hoc per message.
+- SYSR-COM-1: Sender and Receiver ECU domains shall exchange protected messages only through the Key/Session Manager boundary (Boundary C), never applying protection ad hoc per message. In-vehicle PDU authenticity/freshness protection itself is realized by the dedicated SecOC module (see TDA4VM_SecOC_Requirements.md), which consumes the same key state via this boundary.
 - SYSR-COM-2: The Key/Policy Manager shall be the single system-wide source of active keys and freshness policy consumed identically by TX and RX security stacks.
 - SYSR-COM-3: Security violation telemetry crossing Boundary D shall preserve PDU ID and channel-class context for cross-ECU correlation.
 
@@ -66,16 +71,16 @@ graph LR
 - TSC-COM-4: Provide security violation telemetry for operations and forensics.
 
 ### 3.2 Technical Security Requirements (TSR)
-- TSR-COM-1: Use SA2UL-assisted crypto for MAC/signature/encryption operations.
+- TSR-COM-1: Use SA2UL-assisted AES-GCM encryption for confidentiality-protected payloads; in-vehicle PDU authenticity/freshness MAC protection itself is realized by the dedicated SecOC module (see TDA4VM_SecOC_Requirements.md).
 - TSR-COM-2: Bind trust decisions to lifecycle state and key state policy.
-- TSR-COM-3: Implement synchronized freshness counters/nonces across peers.
+- TSR-COM-3: Synchronize session nonces/IVs for confidentiality channels and off-board TLS/mTLS sessions across peers.
 - TSR-COM-4: Integrate drop/deny outcomes with secure logging.
 
 ## 4. Hardware Requirements and Hardware Static Architecture
 
 ### 4.1 Hardware elements
 - TDA4VM (J721E) communication and control domains: Cortex-A72/R5F application cores, DMSC (System Firmware/TIFS)
-- SA2UL crypto accelerator for MAC/signature/encryption
+- SA2UL crypto accelerator for confidentiality encryption/decryption (AES-GCM)
 - eFuse-anchored key material handled via System Firmware provisioning services
 - CAN/Ethernet and related communication peripherals
 - DMSC BootROM/device security type constrains which trust policy is enforceable
@@ -92,89 +97,85 @@ graph LR
 ### 4.2 Hardware Requirements (HWR)
 - HWR-COM-1: Throughput/latency supports enabled protections
 - HWR-COM-2: Key material handling uses protected hardware path
-- HWR-COM-3: SA2UL provides the hardware crypto path for MAC/signature/encryption operations (TSR-COM-1)
+- HWR-COM-3: SA2UL provides the hardware crypto path for confidentiality encryption/decryption operations (TSR-COM-1)
 
 ## 5. Software Requirements and Software Static & Dynamic Architecture
 
 ### 5.1 Software blocks
-- TX security wrapper
-- RX security verifier
-- Freshness manager (counter/nonce sync)
+- TX confidentiality wrapper (AES-GCM encryption for sensitive payloads)
+- RX confidentiality verifier (AES-GCM decryption/tag check)
+- Off-board TLS/mTLS session manager
 - Key and session state manager
-- Communication policy engine
+- Communication policy engine (routes control-relevant PDUs to the SecOC module, sensitive payloads to the confidentiality wrapper)
 - Secure logging connector
 
 ```mermaid
 graph LR
-  TXS[TX Security Stack] --> NET[Com Stack]
-  NET --> RXS[RX Security Stack]
-  RXS --> APP[Application]
+  APP[Application] --> POL[Communication Policy Engine]
+  POL --> SECOC[SecOC Module - see SecOC doc]
+  POL --> TXS[TX Confidentiality Stack]
+  TXS --> NET[Com Stack]
+  NET --> RXS[RX Confidentiality Stack]
+  RXS --> APP
   KEY[Key/Session Manager] --> TXS
   KEY --> RXS
+  KEY --> SECOC
   RXS --> LOG[Secure Logging]
 ```
 
 ### 5.2 Software Requirements (SWR)
-- SWR-COM-1: Reject invalid MAC/signature/freshness
+- SWR-COM-1: Reject invalid confidentiality-channel authentication tag (e.g. AES-GCM tag mismatch) or TLS/mTLS session validation failure
 - SWR-COM-2: Coordinate key transitions with sessions/policy
 - SWR-COM-3: Emit auditable security violations
-- SWR-COM-4: Deterministic channel-class protection configuration
+- SWR-COM-4: Deterministic channel-class protection configuration, including routing control-relevant PDUs to the SecOC module rather than the confidentiality wrapper
 
-### 5.3 Protected in-vehicle communication flow (AUTOSAR SecOC-style) and off-board channel
+### 5.3 Confidentiality-protected channel and off-board TLS session establishment flow
+
+In-vehicle PDU authenticity/freshness verification (SecOC) has its own dedicated sequence diagram
+in [TDA4VM_SecOC_Requirements.md](TDA4VM_SecOC_Requirements.md#53-secoc-protected-authentic-pdu-authentication-and-freshness-verification-flow).
 
 ```mermaid
 sequenceDiagram
   participant App as Sender Application
-  participant Tx as SecOC TX
-  participant FM as Freshness Manager
-  participant Y as SA2UL (AES-128-CMAC)
+  participant Tx as TX Confidentiality Stack
+  participant Y as SA2UL AES-GCM
   participant Bus as CAN-FD/Ethernet
-  participant Rx as SecOC RX
-  participant FMR as Freshness Manager (receiver)
+  participant Rx as RX Confidentiality Stack
   participant AppR as Receiver Application
   participant L as Secure Logging
-  participant OB as Off-board TLS Session (cloud/backend)
+  participant OB as Off-board TLS Session
 
-  App->>Tx: PDU (Secured PDU ID X, data)
-  Tx->>FM: Get current freshness value for PDU ID X
-  FM-->>Tx: Freshness counter (truncated for wire format)
-  Tx->>Y: Compute MAC over (data || freshness) with pre-shared symmetric key
-  Y-->>Tx: Truncated MAC (configured length)
-  Tx->>Bus: Secured I-PDU (data || truncated freshness || truncated MAC)
+  App->>Tx: Sensitive payload for confidentiality-classified channel
+  Tx->>Y: Encrypt payload with session key, AES-GCM
+  Y-->>Tx: Ciphertext plus authentication tag
+  Tx->>Bus: Confidentiality-protected frame
   Bus->>Rx: Deliver frame
-  Rx->>FMR: Reconstruct full freshness from truncated value + local window
-  alt Freshness outside acceptable window
-    Rx->>L: Drop - replay/freshness violation (PDU ID, window delta)
-  else Freshness in window
-    Rx->>Y: Recompute expected MAC with same symmetric key
-    Y-->>Rx: Expected MAC
-    alt MAC mismatch
-      Rx->>L: Drop - authentication failure (PDU ID, timestamp)
-    else MAC match
-      Rx->>AppR: Deliver payload (Verified + Fresh)
-    end
+  Rx->>Y: Decrypt and verify authentication tag
+  alt Tag verification failure
+    Rx->>L: Drop, confidentiality-channel authentication failure
+  else Tag verification success
+    Rx->>AppR: Deliver decrypted payload
   end
 
   Note over OB: Independent off-board path
   OB->>OB: TLS 1.2+/mTLS session using eFuse-anchored device X.509 identity
-  OB->>L: Session establishment/failure logged separately from in-vehicle SecOC path
+  OB->>L: Session establishment/failure logged separately from in-vehicle path
 ```
 
 ### 5.4 Behavioral requirement focus
-- In-vehicle protection uses SecOC-style authentication: a truncated freshness value plus an AES-128-CMAC-class MAC (SA2UL-assisted) appended to the payload, not a bare checksum (CSR-COM-1, TSR-COM-1)
-- Freshness is checked independently of the MAC - a frame with a valid MAC but out-of-window freshness is still dropped as a replay (CSR-COM-3, TSR-COM-3)
-- Any verification failure (freshness or MAC) is fail-closed: the frame is dropped before reaching the receiver application, and a security event is raised rather than silently accepted (CSR-COM-4, SWR-COM-1)
-- Off-board (cloud/backend) sessions use a separate TLS/mTLS trust path anchored to the device's eFuse-derived identity, independent from the in-vehicle bus-level MAC/freshness scheme (CSR-COM-2, TSR-COM-2)
-- Repeated verification failures on the same Secured PDU ID are correlated across the RTMD/logging boundary for escalation, not treated as isolated drops (CSR-COM-5, TSR-COM-4)
+- Sensitive payloads are protected with SA2UL-assisted AES-GCM confidentiality encryption, and a tag verification failure is fail-closed before reaching the receiver application (CSR-COM-2, TSR-COM-1, SWR-COM-1)
+- Off-board (cloud/backend) sessions use a separate TLS/mTLS trust path anchored to the device's eFuse-derived identity, independent from the in-vehicle bus-level scheme (CSR-COM-2, TSR-COM-2)
+- Control-relevant traffic requiring per-PDU authenticity/freshness is routed by the Communication Policy Engine to the dedicated SecOC module rather than the confidentiality wrapper (CSR-COM-1, CSR-COM-3, SWR-COM-4, see TDA4VM_SecOC_Requirements.md)
+- Repeated verification failures on either the confidentiality channel or the SecOC path are correlated across the RTMD/logging boundary for escalation, not treated as isolated drops (CSR-COM-5, TSR-COM-4)
 
 ## 6. Hardware-Software Interface (HSI)
 
 ### 6.1 HSI elements
-- SA2UL MAC/signature/encryption register interface
-- Freshness counter register/NvM interface
+- SA2UL AES-GCM encryption/decryption register interface
+- TLS/mTLS session key and certificate interface for off-board sessions
 - CAN-FD/Ethernet peripheral DMA-to-security-stack interface
 
 ### 6.2 HSI Requirements (HSI)
-- HSI-COM-1: The SA2UL MAC-compute/verify interface shall accept only pre-validated key handles from the Key/Session Manager, never raw key bytes passed directly from the communication stack.
-- HSI-COM-2: The freshness counter interface shall persist across resets in a hardware/NvM-backed register so a reset cannot reset freshness state to a replay-exploitable value.
-- HSI-COM-3: The peripheral DMA interface delivering frames to the RX security stack shall not release payload to the application-facing buffer until the SA2UL verification interface returns a pass status.
+- HSI-COM-1: The SA2UL encrypt/decrypt interface shall accept only pre-validated key handles from the Key/Session Manager, never raw key bytes passed directly from the communication stack.
+- HSI-COM-2: The TLS/mTLS session interface shall present the device's eFuse-anchored X.509 identity without exposing the underlying private key to application memory.
+- HSI-COM-3: The peripheral DMA interface delivering frames to the RX confidentiality stack shall not release payload to the application-facing buffer until the SA2UL verification interface returns a pass status.
