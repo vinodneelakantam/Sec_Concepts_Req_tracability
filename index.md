@@ -33,6 +33,15 @@ CSR/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
 | [Secure Storage]({{ "/TDA4VM_Secure_Storage_Requirements.html" | relative_url }}) | Secure storage of keys/credentials at rest |
 | [Vulnerability Analysis]({{ "/TDA4VM_Vulnerability_Analysis_Requirements.html" | relative_url }}) | ISO 21434 continuous vulnerability monitoring/analysis/management |
 
+## Case study deliverable
+
+Unlike the topic documents above (which define the repo's reusable CSR/FSR/... requirement
+taxonomy), the item below is a point-in-time, standalone vulnerability assessment report for a
+specific subsystem, written as a full engagement deliverable (evidence appendices, CVSS scoring,
+ticket tracking, case-study narratives) rather than a requirements taxonomy document.
+
+- [SVS / Parking Assist Vulnerability Analysis Report]({{ "/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.html" | relative_url }}) - system + software-level vulnerability analysis for a Surround View / Parking Assist ADAS subsystem
+
 ## Requirement ID taxonomy
 
 - **CSR** - Cybersecurity Requirement (what must be true)

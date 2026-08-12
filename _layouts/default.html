@@ -69,7 +69,7 @@
     <nav>
       <a href="{{ '/' | relative_url }}">Home</a>
       {% for doc in site.static_files %}{% endfor %}
-      {% assign docs = site.pages | where_exp: "p", "p.name contains 'TDA4VM_'" | sort: "title" %}
+      {% assign docs = site.pages | where_exp: "p", "p.name != 'index.md'" | sort: "title" %}
       {% for doc in docs %}<a href="{{ doc.url | relative_url }}">{{ doc.nav_title | default: doc.title }}</a>{% endfor %}
     </nav>
   </header>
