@@ -177,6 +177,64 @@ graph LR
   into its destination core's memory only after its certificate has already passed the eFuse
   comparison for that stage - restating TSC-1's chain-of-trust ordering in placement terms.
 
+### 2.6 Signed binary layout - add (build) side vs. verify (HSM/crypto-accelerator) side
+
+> Grounded in TI TISCI Ch.6 "Signing binaries for Secure Boot on HS Devices" and the X.509
+> extension OIDs (`1.3.6.1.4.1.294.1.x`). TDA4VM has no separate "HSM chip" - **SA2UL** is the
+> hardware crypto accelerator that plays that role, driven by DMSC BootROM/System Firmware.
+
+**Build side (offline signing tool) - example: `sysfw.bin`**
+
+```mermaid
+graph LR
+  PAY["Raw Payload"] --> HASH["SHA2-512 Hash"]
+  HASH --> IIE["Image Integrity Ext - hash + size"]
+  PAY -.->|optional| ENC["AES-256-CBC Encrypt, IV + RandomString"]
+  ENC --> EEXT["Encryption Ext"]
+  IIE --> CERT["Build X.509 Certificate"]
+  EEXT --> CERT
+  SWR["SWREV Ext - anti-rollback"] --> CERT
+  LOAD["Load Ext - destAddr, auth_type"] --> CERT
+  BOOT["Boot Ext - bootCore, resetVec, only if this stage releases a core"] --> CERT
+  CERT --> SIGN["RSA-4096 Sign, SMPK or BMPK private key"]
+  SIGN --> OUT["Signed Binary = Certificate then Payload"]
+  PAY --> OUT
+```
+
+**Verify side (on-target, at every boot stage) - SA2UL does the actual crypto math**
+
+```mermaid
+graph LR
+  IN["Signed Binary at Boundary A"] --> PARSE["BootROM/TIFS X.509 Parser"]
+  PARSE --> SIG["SA2UL: RSA-4096 verify vs eFuse SMPK/BMPK hash"]
+  SIG -->|invalid| HALT1["Halt / Recover"]
+  SIG -->|valid| REV["Check SWREV vs eFuse counter"]
+  REV -->|stale| HALT2["Halt / Recover"]
+  REV -->|ok| HASHCHK["SA2UL: SHA2-512 over Payload bytes"]
+  HASHCHK -->|mismatch| HALT3["Halt / Recover"]
+  HASHCHK -->|match| COPY["Copy Payload per Load Ext, destAddr/auth_type"]
+  COPY -->|Encryption Ext present| DEC["SA2UL: AES-256-CBC decrypt, check RandomString trailer"]
+  COPY -->|no encryption| REL["Release core / Execute"]
+  DEC --> REL
+```
+
+- Same two diagrams apply to `sbl_r5f.bin`, only the Boot Ext becomes mandatory (it releases the
+  next core) and the verifier is System Firmware (via `TISCI_MSG_PROC_AUTH_BOOT`), not the BootROM.
+- GP devices skip both diagrams entirely - no X.509 parser exists on GP silicon.
+
+**Certificate removal** - governed by the Load Ext's `auth_type` byte, not a separate delete step:
+
+| `auth_type` | What happens to the certificate bytes |
+|---|---|
+| `0` normal | Payload copied to `destAddr`; cert left behind, unused |
+| `1` in-place | Cert + payload both stay put |
+| `2` in-place variant | Payload shifted down, overwriting the cert's own bytes |
+
+- HSI-4 (see 6.2): the certificate-plus-payload concatenation and the Load-extension `auth_type`
+  copy/strip semantics above are the register/API-level contract between hardware (BootROM/DMSC
+  parsing and copy-and-hash logic) and software (the signing tool that built the file) - formalized
+  as an HSI requirement rather than left as narrative only.
+
 ## 3. Technical Security Concept
 
 ### 3.1 Technical Security Concept (TSC)
@@ -327,8 +385,12 @@ sequenceDiagram
 - DMSC BootROM-to-eFuse register read interface (SMPK/BMPK hash, KEYREV, SWREV)
 - `TISCI_MSG_PROC_AUTH_BOOT` message interface between System Firmware and R5F/A72 core-release control registers
 - SA2UL hash/signature register interface used by the boot chain and the runtime integrity monitor
+- DMSC BootROM/System Firmware X.509 DER parser and Load-extension copy engine that consumes the
+  cert-plus-payload binary layout defined in 2.6 (HS devices only - no such parser exists on GP
+  silicon)
 
 ### 6.2 HSI Requirements (HSI)
 - HSI-1: The eFuse SMPK/BMPK/KEYREV/SWREV register interface shall be readable only by DMSC BootROM and System Firmware, never directly mapped into A72/R5F address space.
 - HSI-2: The `TISCI_MSG_PROC_AUTH_BOOT` interface shall be the sole software-visible mechanism to request release of the R5F SBL or A72 application core; no other register write shall bring a core out of reset.
 - HSI-3: The SA2UL hashing register interface used by the Runtime Integrity Monitor shall report a distinguishable hardware-fault status separate from an integrity-mismatch status, so software can distinguish an accelerator failure from a real tamper detection.
+- HSI-4: The BootROM/System Firmware X.509 parser shall treat the Image Integrity extension's `imageSize`/`shaValue` fields as the sole authority for where the payload begins/ends and what hash it must match, and shall treat the Load extension's `auth_type` field as the sole authority for whether/where the payload is copied - no other offset or length shall be inferred from the file itself.
