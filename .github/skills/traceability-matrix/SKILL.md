@@ -13,9 +13,10 @@ inference when presenting the matrix — it is not a formally-linked RTM.
 
 ## Procedure
 
-1. **Extract every requirement ID and its text** from each `TDA4VM_*_Requirements.md`:
+1. **Extract every requirement ID and its text** from each `TDA4VM_*_Requirements.md` (note:
+   `TDA4VM_Vulnerability_Analysis_Requirements.md` lives under `Vulnerability_Analysis/`, not the repo root):
    ```bash
-   grep -n -E '^- (CSR|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-' TDA4VM_*_Requirements.md
+   grep -n -E '^- (CSR|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-' TDA4VM_*_Requirements.md Vulnerability_Analysis/TDA4VM_*_Requirements.md
    ```
 2. **Build the per-document summary table**:
 

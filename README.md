@@ -54,7 +54,8 @@ Topics currently covered:
 | [TDA4VM_Secure_Reprogramming_Requirements.md](TDA4VM_Secure_Reprogramming_Requirements.md) | Secure ECU reprogramming |
 | [TDA4VM_RTMD_Requirements.md](TDA4VM_RTMD_Requirements.md) | Runtime tamper monitoring and detection |
 | [TDA4VM_Secure_Storage_Requirements.md](TDA4VM_Secure_Storage_Requirements.md) | Secure storage of keys/credentials at rest |
-| [TDA4VM_Vulnerability_Analysis_Requirements.md](TDA4VM_Vulnerability_Analysis_Requirements.md) | ISO 21434 continuous vulnerability monitoring/analysis/management |
+| [Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.md](Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.md) | ISO 21434 continuous vulnerability monitoring/analysis/management (process doc) |
+| [Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.md](Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.md) | Point-in-time SVS/Parking Assist vulnerability analysis report + evidence appendices |
 
 A `.docx` copy of the boot/runtime-integrity doc is also kept for reference.
 

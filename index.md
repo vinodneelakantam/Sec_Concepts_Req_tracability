@@ -31,16 +31,15 @@ CSR/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
 | [Secure Reprogramming]({{ "/TDA4VM_Secure_Reprogramming_Requirements.html" | relative_url }}) | Secure ECU reprogramming |
 | [RTMD]({{ "/TDA4VM_RTMD_Requirements.html" | relative_url }}) | Runtime tamper monitoring and detection |
 | [Secure Storage]({{ "/TDA4VM_Secure_Storage_Requirements.html" | relative_url }}) | Secure storage of keys/credentials at rest |
-| [Vulnerability Analysis]({{ "/TDA4VM_Vulnerability_Analysis_Requirements.html" | relative_url }}) | ISO 21434 continuous vulnerability monitoring/analysis/management |
 
-## Case study deliverable
+## Vulnerability analysis: process vs. deliverable
 
-Unlike the topic documents above (which define the repo's reusable CSR/FSR/... requirement
-taxonomy), the item below is a point-in-time, standalone vulnerability assessment report for a
-specific subsystem, written as a full engagement deliverable (evidence appendices, CVSS scoring,
-ticket tracking, case-study narratives) rather than a requirements taxonomy document.
+These two documents are deliberately kept separate and live together under `Vulnerability_Analysis/`:
 
-- [SVS / Parking Assist Vulnerability Analysis Report]({{ "/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.html" | relative_url }}) - system + software-level vulnerability analysis for a Surround View / Parking Assist ADAS subsystem
+| Document | What it is |
+|---|---|
+| [Vulnerability Management Process]({{ "/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.html" | relative_url }}) | **Requirements doc.** Defines the ongoing ISO 21434 continuous-cybersecurity-activity capability (SBOM/CVE monitoring, TARA re-assessment, risk-treatment routing) using this repo's CSR/FSR/SYSR/TSC/TSR taxonomy. Says a capability must exist - contains no analysis of a specific subsystem. |
+| [SVS / Parking Assist Vulnerability Analysis Report]({{ "/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.html" | relative_url }}) | **Point-in-time report.** One concrete engagement deliverable produced *by* that process for the SVS/Parking Assist subsystem: attack surfaces, STRIDE, CVSS-scored risk matrix, case-study narratives, and evidence appendices (CAN/UDS logs, pen-test findings, static/dynamic/fuzz results). |
 
 ## Requirement ID taxonomy
 
