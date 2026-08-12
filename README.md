@@ -59,6 +59,14 @@ Topics currently covered:
 
 A `.docx` copy of the boot/runtime-integrity doc is also kept for reference.
 
+## Offline single-file export
+
+Every push to `main` builds a single self-contained HTML file (all docs + diagrams
+inlined, no internet/CDN needed to view) via `tools/build-static-html/` and publishes it
+as a GitHub Release asset - see the
+[Releases page](https://github.com/vinodneelakantam/Sec_Concepts_Req_tracability/releases/tag/latest-build)
+for the latest build, or `build-<short-sha>` tags for a specific commit.
+
 ## Repo tooling
 
 The [.github/skills](.github/skills) folder contains Copilot skill files that encode the

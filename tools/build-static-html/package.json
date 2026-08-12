@@ -1,0 +1,13 @@
+{
+  "name": "build-static-html",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Builds a single self-contained offline HTML file bundling every requirements doc in the repo.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "markdown-it": "^14.1.0"
+  }
+}

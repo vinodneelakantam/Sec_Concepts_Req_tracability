@@ -1,3 +1,6 @@
 .vscode/
 tools/mermaid-render/node_modules/
 tools/mermaid-render/.tmp/
+tools/build-static-html/node_modules/
+tools/build-static-html/.tmp/
+dist/

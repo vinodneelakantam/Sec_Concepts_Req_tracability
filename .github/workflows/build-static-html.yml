@@ -1,0 +1,70 @@
+name: Build static HTML export
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.md"
+      - "assets/diagrams/**"
+      - "tools/mermaid-render/**"
+      - "tools/build-static-html/**"
+      - ".github/workflows/build-static-html.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install mermaid-cli (renders any live diagrams)
+        working-directory: tools/mermaid-render
+        run: npm install
+
+      - name: Install static-HTML build tool deps
+        working-directory: tools/build-static-html
+        run: npm install
+
+      - name: Build single-file offline HTML export
+        working-directory: tools/build-static-html
+        run: node build.mjs
+
+      - name: Compute short SHA
+        id: sha
+        run: echo "short=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TDA4VM_Full_Requirements_Static
+          path: dist/TDA4VM_Full_Requirements_Static.html
+          retention-days: 90
+
+      - name: Publish "latest" release (moving pointer, overwritten each build)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-build
+          name: Latest static export (auto-updated)
+          body: >-
+            Auto-generated offline HTML export of the full requirements set, built from
+            commit ${{ github.sha }}. This release is overwritten on every push to `main`.
+          files: dist/TDA4VM_Full_Requirements_Static.html
+
+      - name: Publish per-commit release (permanent, one per commit)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ steps.sha.outputs.short }}
+          name: "Static export @ ${{ steps.sha.outputs.short }}"
+          body: >-
+            Offline HTML export of the full requirements set, built from commit
+            ${{ github.sha }}.
+          files: dist/TDA4VM_Full_Requirements_Static.html
