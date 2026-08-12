@@ -187,17 +187,27 @@ graph LR
 
 ```mermaid
 graph LR
-  PAY["Raw Payload"] --> HASH["SHA2-512 Hash"]
-  HASH --> IIE["Image Integrity Ext - hash + size"]
-  PAY -.->|optional| ENC["AES-256-CBC Encrypt, IV + RandomString"]
+  PAY["Raw
+Payload"] --> HASH["SHA2-512
+Hash"]
+  HASH --> IIE["Image Integrity Ext
+hash + size"]
+  PAY -.->|optional| ENC["AES-256-CBC Encrypt
+IV + RandomString"]
   ENC --> EEXT["Encryption Ext"]
-  IIE --> CERT["Build X.509 Certificate"]
+  IIE --> CERT["Build
+X.509 Certificate"]
   EEXT --> CERT
-  SWR["SWREV Ext - anti-rollback"] --> CERT
-  LOAD["Load Ext - destAddr, auth_type"] --> CERT
-  BOOT["Boot Ext - bootCore, resetVec, only if this stage releases a core"] --> CERT
-  CERT --> SIGN["RSA-4096 Sign, SMPK or BMPK private key"]
-  SIGN --> OUT["Signed Binary = Certificate then Payload"]
+  SWR["SWREV Ext
+anti-rollback"] --> CERT
+  LOAD["Load Ext
+destAddr, auth_type"] --> CERT
+  BOOT["Boot Ext
+bootCore, resetVec"] --> CERT
+  CERT --> SIGN["RSA-4096 Sign
+SMPK or BMPK priv key"]
+  SIGN --> OUT["Signed Binary
+Certificate then Payload"]
   PAY --> OUT
 ```
 
@@ -205,16 +215,23 @@ graph LR
 
 ```mermaid
 graph LR
-  IN["Signed Binary at Boundary A"] --> PARSE["BootROM/TIFS X.509 Parser"]
-  PARSE --> SIG["SA2UL: RSA-4096 verify vs eFuse SMPK/BMPK hash"]
+  IN["Signed Binary
+at Boundary A"] --> PARSE["BootROM/TIFS
+X.509 Parser"]
+  PARSE --> SIG["SA2UL
+RSA-4096 Verify"]
   SIG -->|invalid| HALT1["Halt / Recover"]
-  SIG -->|valid| REV["Check SWREV vs eFuse counter"]
+  SIG -->|valid| REV["Check SWREV
+vs eFuse counter"]
   REV -->|stale| HALT2["Halt / Recover"]
-  REV -->|ok| HASHCHK["SA2UL: SHA2-512 over Payload bytes"]
+  REV -->|ok| HASHCHK["SA2UL
+SHA2-512 Hash Check"]
   HASHCHK -->|mismatch| HALT3["Halt / Recover"]
-  HASHCHK -->|match| COPY["Copy Payload per Load Ext, destAddr/auth_type"]
-  COPY -->|Encryption Ext present| DEC["SA2UL: AES-256-CBC decrypt, check RandomString trailer"]
-  COPY -->|no encryption| REL["Release core / Execute"]
+  HASHCHK -->|match| COPY["Copy Payload
+per Load Ext"]
+  COPY -->|Encryption Ext present| DEC["SA2UL
+AES-256-CBC Decrypt"]
+  COPY -->|no encryption| REL["Release Core<br/>Execute"]
   DEC --> REL
 ```
 
