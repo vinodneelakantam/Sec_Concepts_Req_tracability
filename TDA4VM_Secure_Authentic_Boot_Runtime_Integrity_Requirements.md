@@ -65,6 +65,117 @@ graph LR
 - SYSR-1: The system shall ensure the update-source domain, ECU boot domain, safety domain, and logging domain each interact with the trust chain only at their defined boundary (A-D), never directly modifying boot-stage verification state.
 - SYSR-2: System entities (Safety Manager, Logging domain) shall receive runtime integrity outcomes only through the Runtime Integrity Monitor's defined interface, not by inspecting boot-chain internals directly.
 - SYSR-3: The System Static Architecture shall guarantee that the R5F SBL and A72 Application domains cannot be released except through the DMSC System Firmware authentication boundary (Boundary B).
+- SYSR-4: Every image crossing Boundary A (release package handoff to the ECU) shall carry, per stage, its signed payload plus that stage's X.509 certificate and RSA-4096 signature, so the DMSC/System-Firmware verification chain (TSR-1, TSR-2) can authenticate the package without any out-of-band trust input.
+
+### 2.4 Release package (PDX) structure - image handoff artifact at Boundary A
+
+> "PDX" here is a project-level release-package convention (the shippable archive handed across
+> Boundary A), not a TI-published TDA4VM/TISCI term - called out per this doc's grounding rule.
+> The per-stage X.509 certificate/RSA-4096 signature/SHA2-512 hash contents shown below are the
+> real TI-documented structure (Ch.6 "Signing binaries for Secure Boot on HS Devices"); only the
+> surrounding folder/manifest layout is a packaging convention layered on top of it.
+
+```text
+ECU_PDX/
+├── 00_BOOTROM/                     (Immutable, inside SoC - no files in PDX, burned in silicon)
+├── 01_SYSFW/                       (System Firmware / TIFS)
+│   ├── sysfw.bin
+│   │   ├── Payload (SYSFW code)
+│   │   ├── X.509 Certificate (Public Key SMPK/BMPK, SHA2-512 hash, KEYREV, SWREV,
+│   │   │                       load address, optional AES encryption extension)
+│   │   └── RSA-4096 Signature
+│   └── manifest_sysfw.json
+├── 02_SBL_R5F/                     (Secondary bootloader)
+│   ├── sbl_r5f.bin (Payload, X.509 cert w/ BMPK, SHA2-512 hash, KEYREV, SWREV, RSA-4096 sig)
+│   └── manifest_sbl.json
+├── 03_R5F_APPS/
+│   ├── r5f_app0.bin, r5f_app1.bin (Payload, X.509 cert w/ OEM key, SHA2-512 hash,
+│   │                                KEYREV, SWREV, RSA-4096 sig)
+│   └── manifest_r5f.json
+├── 04_A72_APPS/
+│   ├── bl31.bin (ATF), bl32.bin (OP-TEE), bl33.bin (U-Boot), Image (Linux kernel), dtb
+│   └── manifest_a72.json
+├── 05_FS/                          (RootFS, optionally encrypted)
+│   ├── rootfs.ext4
+│   └── manifest_fs.json
+├── 06_KEYS/                        (OEM public key material, for release tooling/traceability)
+│   ├── smpk_pub.pem, bmpk_pub.pem, oem_app_pub.pem, key_policy.json
+├── 07_CERTS/                       (Extracted certificate bundle, for release tooling/traceability)
+│   ├── sysfw_cert.pem, sbl_cert.pem, r5f_app_cert.pem, a72_app_cert.pem, cert_chain.pem
+├── 08_LOGS/                        (Bench/build-time secure boot logs, not device-consumed)
+│   ├── sysfw_boot_log.bin, sbl_boot_log.bin, app_boot_log.bin
+└── 09_MANIFEST/
+    └── ecu_manifest.json           (Top-level manifest binding all per-stage manifests/versions)
+```
+
+- `00_BOOTROM/` is intentionally empty: the DMSC BootROM (TSR-1's root of trust) is immutable
+  silicon and is never part of a shippable package.
+- `01_SYSFW/` through `04_A72_APPS/` mirror the chain of trust in 2.2/3.2 one folder per stage:
+  each `.bin` carries the same X.509-cert-plus-RSA-4096-signature shape verified in turn by
+  `TISCI_MSG_PROC_AUTH_BOOT` (TSR-2), with KEYREV/SWREV fields feeding the anti-rollback check
+  in TSR-3.
+- `06_KEYS/` and `07_CERTS/` are extracted copies for release/signing tooling and audit
+  traceability - the DMSC does not read these paths at boot; it only reads the certificate
+  embedded inside each stage's own `.bin`.
+- `08_LOGS/` holds bench/build-time boot logs (e.g. from signing-lab validation runs), distinct
+  from the on-device Secure Logging domain described in `TDA4VM_Secure_Logging_Requirements.md`.
+- `09_MANIFEST/ecu_manifest.json` is the release identity: it binds the per-stage manifests,
+  digests, and SWREV/KEYREV versions into one traceable package version (SYSR-4).
+
+### 2.5 Binary-to-hardware placement and root-of-trust verification mapping
+
+Two distinct relationships exist between each PDX artifact and the hardware, and they must not be
+conflated: **copy/load** (the payload is placed into a core's execution memory) versus **verify**
+(the certificate/signature is checked against the eFuse-anchored root of trust before that copy is
+allowed to run). The eFuse root of trust is never itself overwritten by a PDX binary - it is
+factory/OEM-provisioned once and only ever read for comparison.
+
+```mermaid
+graph LR
+  subgraph PDX["Release package - PDX artifacts"]
+    SYSFWBIN["01_SYSFW/sysfw.bin"]
+    SBLBIN["02_SBL_R5F/sbl_r5f.bin"]
+    R5FBIN["03_R5F_APPS/r5f_app0-1.bin"]
+    A72BIN["04_A72_APPS/bl31+bl32+bl33+Image+dtb"]
+    FSBIN["05_FS/rootfs.ext4"]
+  end
+
+  subgraph RoT["Root of trust anchor - eFuse (DMSC-only read access)"]
+    EFUSE["SMPK/BMPK key hash, KEYREV, SWREV"]
+  end
+
+  subgraph HW["Destination hardware cores/memory"]
+    DMSCMEM["DMSC Cortex-M3 - internal SYSFW/TIFS RAM"]
+    R5FSBLMEM["Cortex-R5F SBL core - TCM/SRAM"]
+    R5FAPPMEM["Cortex-R5F application cores - TCM/SRAM"]
+    A72MEM["Cortex-A72 cores - DDR"]
+  end
+
+  SYSFWBIN -->|"copied into, released by BootROM"| DMSCMEM
+  SBLBIN -->|"copied into, released via TISCI_MSG_PROC_AUTH_BOOT"| R5FSBLMEM
+  R5FBIN -->|"copied into, released via TISCI_MSG_PROC_AUTH_BOOT"| R5FAPPMEM
+  A72BIN -->|"copied into, released via TISCI_MSG_PROC_AUTH_BOOT"| A72MEM
+  FSBIN -->|"mounted by A72 HLOS after release"| A72MEM
+
+  SYSFWBIN -.->|"cert verified by BootROM against"| EFUSE
+  SBLBIN -.->|"cert verified by SYSFW against"| EFUSE
+  R5FBIN -.->|"cert verified by SYSFW against"| EFUSE
+  A72BIN -.->|"cert verified by SYSFW/SBL against"| EFUSE
+```
+
+| PDX artifact | Copied/loaded into (HW destination) | Verified against (root of trust) | Verifying stage |
+|---|---|---|---|
+| `01_SYSFW/sysfw.bin` | DMSC Cortex-M3 internal RAM | eFuse SMPK/BMPK key hash + KEYREV/SWREV | DMSC BootROM (TSR-1) |
+| `02_SBL_R5F/sbl_r5f.bin` | Cortex-R5F SBL core TCM/SRAM | eFuse SMPK/BMPK key hash + KEYREV/SWREV | System Firmware, via `TISCI_MSG_PROC_AUTH_BOOT` (TSR-2) |
+| `03_R5F_APPS/r5f_app*.bin` | Cortex-R5F application core(s) TCM/SRAM | eFuse SMPK/BMPK key hash + KEYREV/SWREV | System Firmware, via `TISCI_MSG_PROC_AUTH_BOOT` (TSR-2) |
+| `04_A72_APPS/bl31.bin`, `bl32.bin`, `bl33.bin`, `Image`, `dtb` | Cortex-A72 core DDR | eFuse SMPK/BMPK key hash + KEYREV/SWREV | System Firmware/SBL stage, via `TISCI_MSG_PROC_AUTH_BOOT` (TSR-2) |
+| `05_FS/rootfs.ext4` | Cortex-A72 DDR (mounted by HLOS) | Not independently signature-checked by the boot chain itself - integrity depends on the already-verified A72 bootloader/kernel that mounts it | n/a (post-boot mount) |
+
+- The eFuse row (`EFUSE`) is only ever a **read/compare** target, never a write target, from any
+  PDX binary - it is the one component in this mapping that is not "copied to" (CSR-3, TSR-1).
+- Every copy edge in the diagram is gated by the matching dashed verify edge: a payload is placed
+  into its destination core's memory only after its certificate has already passed the eFuse
+  comparison for that stage - restating TSC-1's chain-of-trust ordering in placement terms.
 
 ## 3. Technical Security Concept
 
