@@ -121,6 +121,10 @@ ECU_PDX/
   from the on-device Secure Logging domain described in `TDA4VM_Secure_Logging_Requirements.md`.
 - `09_MANIFEST/ecu_manifest.json` is the release identity: it binds the per-stage manifests,
   digests, and SWREV/KEYREV versions into one traceable package version (SYSR-4).
+- The SMPK/BMPK private keys used to sign every `.bin` above never touch the ECU or this package -
+  only their public-key hash is factory-burned into eFuse; see
+  `TDA4VM_Secure_Storage_Requirements.md` for the eFuse KEK/DKEK/keyring provisioning mechanics
+  that share the same eFuse array.
 
 ### 2.5 Binary-to-hardware placement and root-of-trust verification mapping
 
@@ -231,13 +235,53 @@ SHA2-512 Hash Check"]
 per Load Ext"]
   COPY -->|Encryption Ext present| DEC["SA2UL
 AES-256-CBC Decrypt"]
-  COPY -->|no encryption| REL["Release Core<br/>Execute"]
+  COPY -->|no encryption| REL["Release Core
+Execute"]
   DEC --> REL
 ```
 
 - Same two diagrams apply to `sbl_r5f.bin`, only the Boot Ext becomes mandatory (it releases the
   next core) and the verifier is System Firmware (via `TISCI_MSG_PROC_AUTH_BOOT`), not the BootROM.
 - GP devices skip both diagrams entirely - no X.509 parser exists on GP silicon.
+
+### 2.7 Crypto algorithm detail - hashing, certificate/signature, encryption
+
+| Operation | Algorithm | Key / material | Runs on | Carried in |
+|---|---|---|---|---|
+| Hash | SHA2-512 (unkeyed) | none | SA2UL SHA engine | Image Integrity ext `shaValue` (64B) |
+| Signature | RSASSA-PKCS1-v1_5 (RFC 8017), RSA-4096 | Sign: SMPK/BMPK private key (offline). Verify: SMPK/BMPK public-key hash, from eFuse (KEYREV-selected) | SA2UL PKA (public-key accelerator) | Certificate's own signature field, over `TBSCertificate` |
+| Encryption (optional) | AES-256-CBC | 16B IV + 32B random-string trailer (decrypt-success proof), key = active MEK | SA2UL AES engine | Encryption ext `initialVector`, `randomString` |
+
+**Message-level mechanic** - `TISCI_MSG_PROC_AUTH_BOOT` never carries the binary itself, only a
+pointer to it:
+
+```mermaid
+sequenceDiagram
+    participant Host as Host or SBL
+    participant Mem as Shared Memory
+    participant DMSC as DMSC then SA2UL
+
+    Host->>Mem: Write Certificate then Payload
+    Host->>DMSC: TISCI_MSG_PROC_AUTH_BOOT, certificate_address
+    DMSC->>Mem: Read and parse Certificate
+    DMSC->>DMSC: SA2UL PKA verify, SHA2-512 check, AES decrypt if needed
+    alt Verification failed
+        DMSC-->>Host: NAK, no reason given, anti-scan
+    else Verification passed
+        DMSC->>Mem: Copy Payload per Load Ext
+        DMSC-->>Host: ACK, image_address, image_size
+    end
+```
+
+- **HS-FS vs HS-SE nuance**: on HS-FS device type, `TISCI_MSG_PROC_AUTH_BOOT` only performs the
+  image integrity (hash) check - the root-of-trust key/signature comparison is skipped. Full
+  RSA-4096/PKA signature verification against the eFuse key hash only happens on HS-SE. Don't
+  assume every HS device does the full PKA verify - it is HS-SE only.
+- **Streaming variant** (`am275x` only): large images too big to verify in one shot use
+  `TISCI_MSG_MCELF_PROC_AUTH_BOOT_INIT` (validate the certificate/signature alone) ->
+  `..._UPDATE` (feed segments into the running SHA2-512, max 4MB-16B unencrypted or 62KB
+  encrypted, must be a multiple of 16B if encrypted) -> `..._FINISH` (compare final hash, run any
+  streaming AES-256-CBC decrypt, then configure/release the core).
 
 **Certificate removal** - governed by the Load Ext's `auth_type` byte, not a separate delete step:
 
@@ -251,6 +295,46 @@ AES-256-CBC Decrypt"]
   copy/strip semantics above are the register/API-level contract between hardware (BootROM/DMSC
   parsing and copy-and-hash logic) and software (the signing tool that built the file) - formalized
   as an HSI requirement rather than left as narrative only.
+
+### 2.8 Runtime integrity monitoring detail - what is re-hashed, where the reference lives, trigger model
+
+> FSR-4/TSR-4 establish that runtime re-checking exists, but TI does not publish a named
+> "runtime attestation" feature for TDA4VM. This section documents it as an architectural pattern
+> built only from already-grounded primitives: the SA2UL SHA2-512 engine (2.7) and the Protected
+> NvM partition (`TDA4VM_Secure_Storage_Requirements.md`, TSR-STO-5/HWR-STO-4) reused as
+> reference-hash storage - not a separate TI-named mechanism.
+
+```mermaid
+graph LR
+  BUILD["Build time
+Compute golden hash"] --> NVM["Protected NvM
+Reference hash, write-once"]
+  APP["A72 Application
+Code + critical config"] --> REHASH["SA2UL
+SHA2-512 rehash"]
+  NVM --> CMP["Runtime Monitor
+Compare"]
+  REHASH --> CMP
+  CMP -->|match| OK["Continue
+No action"]
+  CMP -->|mismatch| VIOL["Report to
+Safety Coordinator"]
+  VIOL --> LOGX["Secure Logging
+Tamper record"]
+```
+
+| Trigger | Region covered | Action on mismatch |
+|---|---|---|
+| Periodic (watchdog-tied interval) | A72 application code segments | Escalate per graded response (warn/degrade/reset), same as 5.3's loop |
+| Event (before a safety-critical mode transition) | Calibration/critical config data | Block the transition, escalate to Safety Coordinator |
+| First boot after reprogramming | Full application image | Treated as a boot-time check, not this monitor - falls back to TSR-2/TSR-5 |
+
+- Cadence and exact region boundaries are this doc's architectural choice (SWR-2), not a
+  TI-mandated value - TI's contribution is the SA2UL hashing primitive and Protected NvM's
+  crash-consistent write path, not the monitoring policy itself.
+- A runtime mismatch does not re-enter the boot chain by itself: the Runtime Monitor escalates a
+  graded response (warn/degrade/reset, per 5.3's loop) to the Safety Coordinator - only an explicit
+  reset re-enters DMSC BootROM (TSR-5); this is not an automatic fallback-image swap.
 
 ## 3. Technical Security Concept
 
@@ -267,6 +351,10 @@ AES-256-CBC Decrypt"]
 - TSR-3: The eFuse SWREV monotonic counter is checked as part of certificate validation at every stage of this same chain, not only at flashing time.
 - TSR-4: Runtime integrity re-checking is built from SA2UL hashing plus protected NvM reference storage (architectural pattern consistent with TI's documented SA2UL/TISCI crypto services, not a separately named TI feature).
 - TSR-5: Reprogramming's post-flash activation reset re-runs the identical DMSC BootROM -> System Firmware/TIFS -> R5F SBL chain - no separate path.
+- TSR-6: A boot-time authentication failure (TSR-1/TSR-2/TSR-3) at ordinary power-on shall halt with
+  no fallback image at that stage; an automatic image revert exists only on the OTA/reprogramming
+  activation path (`TDA4VM_OTA_FOTA_SOTA_Requirements.md` CSR-OTA-4), never as an implicit behavior
+  of a normal power-on failure.
 
 ## 4. Hardware Requirements and Hardware Static Architecture
 
@@ -280,7 +368,8 @@ AES-256-CBC Decrypt"]
 - eFuse array: holds the hash of the customer root-of-trust public keys (SMPK/BMPK), plus the
   KEYREV and SWREV monotonic counters used for anti-rollback
 - Flash/OSPI/eMMC for bootloader and application images
-- JTAG/Sec-AP debug interface, gated by device security configuration (GP / HS-FS / HS-SE)
+- JTAG/Sec-AP debug interface, gated by device security configuration (GP / HS-FS / HS-SE) - see
+  `TDA4VM_Secure_JTAG_Requirements.md` for the per-type default-open/closed table and unlock flow
 
 ```mermaid
 graph LR
@@ -395,6 +484,9 @@ sequenceDiagram
 - SWREV-based anti-rollback is checked at every stage of the chain, not only at flashing time (TSR-3)
 - Boot/authentication failure handling (halt vs. logged/measured continuation) is a deliberate,
   documented policy choice per stage, not an assumed default (TSC-2)
+- Authentication-failure and runtime-tamper log entries referenced above use the chained-HMAC
+  record format defined in `TDA4VM_Secure_Logging_Requirements.md` (event ID, severity, module ID,
+  SA2UL HMAC chain) - this doc defines only *when* a record is emitted, not its on-disk shape
 
 ## 6. Hardware-Software Interface (HSI)
 
@@ -405,9 +497,13 @@ sequenceDiagram
 - DMSC BootROM/System Firmware X.509 DER parser and Load-extension copy engine that consumes the
   cert-plus-payload binary layout defined in 2.6 (HS devices only - no such parser exists on GP
   silicon)
+- Runtime Integrity Monitor-to-Protected-NvM reference-hash read interface (write-once at
+  provisioning, a distinct logical region within the same physical partition described in
+  `TDA4VM_Secure_Storage_Requirements.md`)
 
 ### 6.2 HSI Requirements (HSI)
 - HSI-1: The eFuse SMPK/BMPK/KEYREV/SWREV register interface shall be readable only by DMSC BootROM and System Firmware, never directly mapped into A72/R5F address space.
 - HSI-2: The `TISCI_MSG_PROC_AUTH_BOOT` interface shall be the sole software-visible mechanism to request release of the R5F SBL or A72 application core; no other register write shall bring a core out of reset.
 - HSI-3: The SA2UL hashing register interface used by the Runtime Integrity Monitor shall report a distinguishable hardware-fault status separate from an integrity-mismatch status, so software can distinguish an accelerator failure from a real tamper detection.
 - HSI-4: The BootROM/System Firmware X.509 parser shall treat the Image Integrity extension's `imageSize`/`shaValue` fields as the sole authority for where the payload begins/ends and what hash it must match, and shall treat the Load extension's `auth_type` field as the sole authority for whether/where the payload is copied - no other offset or length shall be inferred from the file itself.
+- HSI-5: The Protected NvM partition holding runtime-integrity reference hashes shall be writable only by the build/provisioning flow that computed them, and readable only by the Runtime Integrity Monitor for comparison - no runtime code path may overwrite a reference hash after provisioning.
