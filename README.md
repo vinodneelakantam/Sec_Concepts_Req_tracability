@@ -61,11 +61,33 @@ A `.docx` copy of the boot/runtime-integrity doc is also kept for reference.
 
 ## Offline single-file export
 
-Every push to `main` builds a single self-contained HTML file (all docs + diagrams
-inlined, no internet/CDN needed to view) via `tools/build-static-html/` and publishes it
-as a GitHub Release asset - see the
-[Releases page](https://github.com/vinodneelakantam/Sec_Concepts_Req_tracability/releases/tag/latest-build)
-for the latest build, or `build-<short-sha>` tags for a specific commit.
+Every push to `main` builds a single self-contained HTML file - all docs and diagrams
+inlined as base64, no internet/CDN/repo checkout needed to view it - via
+`tools/build-static-html/` (see [.github/workflows/build-static-html.yml](.github/workflows/build-static-html.yml)).
+
+### Download the latest build (no checkout needed)
+
+1. Go to the
+   [`latest-build` release](https://github.com/vinodneelakantam/Sec_Concepts_Req_tracability/releases/tag/latest-build)
+   (always overwritten with the newest commit on `main`).
+2. Under **Assets**, download `TDA4VM_Full_Requirements_Static.html`.
+3. Open the downloaded file directly in any browser - it works fully offline.
+
+To get the build from one specific commit instead of always the newest, open the
+[Releases page](https://github.com/vinodneelakantam/Sec_Concepts_Req_tracability/releases)
+and pick the `build-<short-sha>` tag matching that commit (each push creates a new,
+permanent one alongside `latest-build`).
+
+### Build it yourself locally
+
+```sh
+cd tools/mermaid-render && npm install    # one-time: provides mmdc + Chrome
+cd ../build-static-html && npm install    # one-time: provides markdown-it
+node build.mjs                            # writes ../../dist/TDA4VM_Full_Requirements_Static.html
+```
+
+See [tools/build-static-html/README.md](tools/build-static-html/README.md) for details
+(custom output paths, what gets inlined, troubleshooting Chrome/puppeteer on Linux).
 
 ## Repo tooling
 
