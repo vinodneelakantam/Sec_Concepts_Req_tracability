@@ -10,20 +10,28 @@ This repo tracks cybersecurity requirements for a TDA4VM (TI Jacinto 7 / J721E) 
 prep, not generic textbook boilerplate — always prefer a verified chip/standard fact over a
 plausible-sounding invented one.
 
-## Repo document set
+## Site structure: organized per ECU
+
+The site's top-level landing page (`index.md`) is an ECU selector with two options: **Parking**
+(ADAS Parking Assist / Surround View System) and **SDV** (Software Defined Vehicle, currently TBD).
+All 10 topic documents plus the vulnerability analysis deliverable and TARA dashboard below live
+under `Parking/` (the repo root is no longer where new Parking docs go — see
+`Parking/index.md` for the ECU hub page). `SDV/index.md` is a placeholder until SDV content exists.
+
+## Repo document set (all under `Parking/`)
 
 | File | Topic |
 |---|---|
-| `TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md` | Secure/authentic boot chain + runtime integrity (most safety/security-critical doc) |
-| `TDA4VM_Secure_JTAG_Requirements.md` | Debug/JTAG access control |
-| `TDA4VM_SecureAccess_Requirements.md` | UDS SecurityAccess (diagnostic protected services) |
-| `TDA4VM_SecOC_Requirements.md` | Full secure communication stack: AUTOSAR SecOC per-PDU authenticity/freshness (Data ID, MAC, Freshness Value Manager), confidentiality-protected channels (SA2UL AES-GCM), off-board TLS/mTLS, shared key/session management |
-| `TDA4VM_Secure_Logging_Requirements.md` | Tamper-evident security event logging |
-| `TDA4VM_OTA_FOTA_SOTA_Requirements.md` | Over-the-air update security |
-| `TDA4VM_Secure_Reprogramming_Requirements.md` | UDS-based flashing/reprogramming |
-| `TDA4VM_RTMD_Requirements.md` | Runtime Tamper Monitoring and Detection |
-| `TDA4VM_Secure_Storage_Requirements.md` | Secure storage of keys/credentials/secrets at rest (KEK/DKEK, keyring, extended OTP) |
-| `TDA4VM_Vulnerability_Analysis_Requirements.md` | ISO 21434 continuous vulnerability monitoring/analysis/management, cross-linked to the other docs' CSG/TSR IDs (process-oriented, template deliberately adapted — see the doc's scope note) |
+| `Parking/TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md` | Secure/authentic boot chain + runtime integrity (most safety/security-critical doc) |
+| `Parking/TDA4VM_Secure_JTAG_Requirements.md` | Debug/JTAG access control |
+| `Parking/TDA4VM_SecureAccess_Requirements.md` | UDS SecurityAccess (diagnostic protected services) |
+| `Parking/TDA4VM_SecOC_Requirements.md` | Full secure communication stack: AUTOSAR SecOC per-PDU authenticity/freshness (Data ID, MAC, Freshness Value Manager), confidentiality-protected channels (SA2UL AES-GCM), off-board TLS/mTLS, shared key/session management |
+| `Parking/TDA4VM_Secure_Logging_Requirements.md` | Tamper-evident security event logging |
+| `Parking/TDA4VM_OTA_FOTA_SOTA_Requirements.md` | Over-the-air update security |
+| `Parking/TDA4VM_Secure_Reprogramming_Requirements.md` | UDS-based flashing/reprogramming |
+| `Parking/TDA4VM_RTMD_Requirements.md` | Runtime Tamper Monitoring and Detection |
+| `Parking/TDA4VM_Secure_Storage_Requirements.md` | Secure storage of keys/credentials/secrets at rest (KEK/DKEK, keyring, extended OTP) |
+| `Parking/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.md` | ISO 21434 continuous vulnerability monitoring/analysis/management, cross-linked to the other docs' CSG/TSR IDs (process-oriented, template deliberately adapted — see the doc's scope note) |
 
 ## Document structure convention (every file follows this exactly)
 

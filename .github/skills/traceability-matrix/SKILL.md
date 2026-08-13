@@ -13,10 +13,11 @@ inference when presenting the matrix — it is not a formally-linked RTM.
 
 ## Procedure
 
-1. **Extract every requirement ID and its text** from each `TDA4VM_*_Requirements.md` (note:
-   `TDA4VM_Vulnerability_Analysis_Requirements.md` lives under `Vulnerability_Analysis/`, not the repo root):
+1. **Extract every requirement ID and its text** from each `TDA4VM_*_Requirements.md` (note: all
+   Parking-ECU docs live under `Parking/`, and `TDA4VM_Vulnerability_Analysis_Requirements.md`
+   lives under `Parking/Vulnerability_Analysis/`, not directly under `Parking/`):
    ```bash
-   grep -n -E '^- (CSG|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-' TDA4VM_*_Requirements.md Vulnerability_Analysis/TDA4VM_*_Requirements.md
+   grep -n -E '^- (CSG|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-' Parking/TDA4VM_*_Requirements.md Parking/Vulnerability_Analysis/TDA4VM_*_Requirements.md
    ```
 2. **Build the per-document summary table**:
 

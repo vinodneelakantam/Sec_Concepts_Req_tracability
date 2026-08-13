@@ -6,47 +6,58 @@ nav_title: Home
 
 # TDA4VM ADAS ECU Cybersecurity Requirements
 
-This site is a collection of automotive cybersecurity requirements documents for a
-TDA4VM (TI Jacinto 7 / J721E) ADAS ECU. It exists as a learning and interview-preparation
-resource for grounding automotive cybersecurity concepts in real hardware/firmware facts
-(TI TISCI mailbox APIs, DMSC, SA2UL, TIFS, eFuse/OTP, etc.) rather than generic textbook
-descriptions, while following established standards vocabulary (ISO 21434, ISO 14229 UDS,
-AUTOSAR SecOC).
+This site is a collection of automotive cybersecurity requirements documents and TARA
+(Threat Analysis and Risk Assessment) dashboards, organized per ECU. It exists as a learning
+and interview-preparation resource for grounding automotive cybersecurity concepts in real
+hardware/firmware facts (TI TISCI mailbox APIs, DMSC, SA2UL, TIFS, eFuse/OTP, etc.) rather
+than generic textbook descriptions, while following established standards vocabulary
+(ISO 21434, ISO 14229 UDS, AUTOSAR SecOC).
 
-Each document follows the same flow: **FSC (→FSR) → System Requirements + System Static
-Architecture → TSC (→TSR) → Hardware Requirements + Hardware Static Architecture → Software
-Requirements + Software Static & Dynamic Architecture → HSI**, using a consistent
-CSG/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
+## Choose an ECU
 
-## Topics
+<div class="ecu-cards">
+  <a class="ecu-card" href="{{ '/Parking/' | relative_url }}">
+    <h2>PARKING</h2>
+    <p>ADAS Parking Assist / Surround View System (SVS) ECU</p>
+    <p>Requirements documents, TARA dashboard, and vulnerability analysis report</p>
+  </a>
+  <a class="ecu-card ecu-card-tbd" href="{{ '/SDV/' | relative_url }}">
+    <h2>SDV</h2>
+    <p>Software Defined Vehicle platform</p>
+    <span class="badge-tbd">TBD</span>
+  </a>
+</div>
 
-| Document | Topic |
-|---|---|
-| [Secure and Authentic Boot with Runtime Integrity]({{ "/TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.html" | relative_url }}) | Secure/authentic boot and runtime integrity |
-| [Secure JTAG and Debug Control]({{ "/TDA4VM_Secure_JTAG_Requirements.html" | relative_url }}) | JTAG/debug port access control |
-| [Secure Access]({{ "/TDA4VM_SecureAccess_Requirements.html" | relative_url }}) | UDS SecurityAccess (diagnostic access control) |
-| [SecOC]({{ "/TDA4VM_SecOC_Requirements.html" | relative_url }}) | Secure communication stack: AUTOSAR SecOC per-PDU authenticity/freshness, confidentiality channels, off-board TLS |
-| [Secure Logging]({{ "/TDA4VM_Secure_Logging_Requirements.html" | relative_url }}) | Secure/tamper-evident logging |
-| [OTA/FOTA/SOTA]({{ "/TDA4VM_OTA_FOTA_SOTA_Requirements.html" | relative_url }}) | OTA/FOTA/SOTA update delivery |
-| [Secure Reprogramming]({{ "/TDA4VM_Secure_Reprogramming_Requirements.html" | relative_url }}) | Secure ECU reprogramming |
-| [RTMD]({{ "/TDA4VM_RTMD_Requirements.html" | relative_url }}) | Runtime tamper monitoring and detection |
-| [Secure Storage]({{ "/TDA4VM_Secure_Storage_Requirements.html" | relative_url }}) | Secure storage of keys/credentials at rest |
-
-## Vulnerability analysis: process vs. deliverable
-
-These two documents are deliberately kept separate and live together under `Vulnerability_Analysis/`:
-
-| Document | What it is |
-|---|---|
-| [Vulnerability Management Process]({{ "/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.html" | relative_url }}) | **Requirements doc.** Defines the ongoing ISO 21434 continuous-cybersecurity-activity capability (SBOM/CVE monitoring, TARA re-assessment, risk-treatment routing) using this repo's CSG/FSR/SYSR/TSC/TSR taxonomy. Says a capability must exist - contains no analysis of a specific subsystem. |
-| [SVS / Parking Assist Vulnerability Analysis Report]({{ "/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.html" | relative_url }}) | **Point-in-time report.** One concrete engagement deliverable produced *by* that process for the SVS/Parking Assist subsystem: attack surfaces, STRIDE, CVSS-scored risk matrix, case-study narratives, and evidence appendices (CAN/UDS logs, pen-test findings, static/dynamic/fuzz results). |
-
-## TARA dashboards
-
-Interactive, self-contained TARA (Threat Analysis and Risk Assessment) scoring dashboards live under
-`TARA/Ref/`. Start at the [TARA ECU selector]({{ "/TARA/Ref/index.html" | relative_url }}) to pick an
-ECU (Parking or SDV) and view its full asset/threat/risk table with live scoring, filtering, and
-XLSX export.
+<style>
+  .ecu-cards { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .ecu-card {
+    display: block;
+    width: 260px;
+    padding: 1.5rem 1.25rem;
+    border: 2px solid #1a365d;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .ecu-card:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
+  .ecu-card h2 { margin: 0 0 0.5rem; color: #1a365d; }
+  .ecu-card p { margin: 0.2rem 0; font-size: 0.85rem; color: #57606a; }
+  .ecu-card-tbd { border-color: #999; opacity: 0.85; }
+  .ecu-card-tbd h2 { color: #666; }
+  .badge-tbd {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.1rem 0.7rem;
+    background: #e0e0e0;
+    color: #555;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+</style>
 
 ## Requirement ID taxonomy
 

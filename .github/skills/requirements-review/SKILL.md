@@ -60,7 +60,7 @@ CSG/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI must be its own full sentence under its sub
 Extract every requirement ID across all files and check for accidental collisions (two different
 docs both claiming `CSG-STO-1`, for instance, other than the intentionally bare-suffix boot doc):
 ```bash
-grep -n -oE '(CSG|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-[A-Z]*-?[0-9]+' TDA4VM_*_Requirements.md Vulnerability_Analysis/TDA4VM_*_Requirements.md | sort -t: -k2
+grep -n -oE '(CSG|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-[A-Z]*-?[0-9]+' Parking/TDA4VM_*_Requirements.md Parking/Vulnerability_Analysis/TDA4VM_*_Requirements.md | sort -t: -k2
 ```
 Any ID string appearing under two different topic suffixes with the same file scope is a bug.
 

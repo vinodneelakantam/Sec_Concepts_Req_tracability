@@ -1,0 +1,105 @@
+<!-- TARA dashboard viewer for the Parking ECU (ECU selection now happens on the site's top-level landing page). -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>TARA Dashboard - Parking</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f8;
+  }
+
+  #viewer {
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+  }
+
+  #viewer-toolbar {
+    flex: 0 0 auto;
+    background: #1a365d;
+    color: white;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #viewer-toolbar a.back-link {
+    background: #2ed573;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  #viewer-toolbar a.back-link:hover {
+    background: #26af5f;
+  }
+
+  #viewer-toolbar span {
+    font-weight: bold;
+  }
+
+  #viewer-tabs {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  #viewer-tabs button {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  #viewer-tabs button.active {
+    background: white;
+    color: #1a365d;
+    border-color: white;
+  }
+
+  #viewer-frame {
+    flex: 1 1 auto;
+    border: none;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<div id="viewer">
+  <div id="viewer-toolbar">
+    <a class="back-link" href="../../index.html">&larr; Back to Parking</a>
+    <span id="viewer-title">PARKING - ADAS Parking Assist / SVS</span>
+    <div id="viewer-tabs">
+      <button id="tab-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+      <button id="tab-report" onclick="switchTab('report')">Full Report</button>
+    </div>
+  </div>
+  <iframe id="viewer-frame" src="TARA_PARKING.html"></iframe>
+</div>
+
+<script>
+const ecuContent = {
+  dashboard: 'TARA_PARKING.html',
+  report: '../../Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.html'
+};
+
+function switchTab(tab) {
+  document.getElementById('viewer-frame').src = ecuContent[tab];
+  document.getElementById('tab-dashboard').classList.toggle('active', tab === 'dashboard');
+  document.getElementById('tab-report').classList.toggle('active', tab === 'report');
+}
+
+switchTab('dashboard');
+</script>
+
+</body></html>

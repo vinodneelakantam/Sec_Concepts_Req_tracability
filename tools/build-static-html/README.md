@@ -1,9 +1,9 @@
 # build-static-html
 
 Builds **one self-contained HTML file** bundling every requirements doc in the repo
-(`index.md`, all `TDA4VM_*.md`, and `Vulnerability_Analysis/*.md`) - no internet
-connection, CDN, or separate asset files needed to view it. All Mermaid diagrams and
-images are inlined as base64 data URIs directly in the HTML.
+(`index.md`, `Parking/index.md` + all `Parking/TDA4VM_*.md` + `Parking/Vulnerability_Analysis/*.md`,
+and `SDV/index.md`) - no internet connection, CDN, or separate asset files needed to view it.
+All Mermaid diagrams and images are inlined as base64 data URIs directly in the HTML.
 
 This is the "ship to the outside world" artifact: a single file you can email, attach to
 a release, or open straight from disk.

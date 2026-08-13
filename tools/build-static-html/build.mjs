@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Builds ONE self-contained, offline-viewable HTML file bundling every requirements
-// doc in the repo (index + all TDA4VM_*.md + Vulnerability_Analysis/*.md): Mermaid
+// doc in the repo (top-level index + Parking/SDV ECU landing pages + all
+// Parking/TDA4VM_*.md + Parking/Vulnerability_Analysis/*.md): Mermaid
 // diagrams and images are inlined as base64 data URIs, so the output has zero
 // external dependencies (no CDN, no separate image files) and can be emailed/shipped
 // as a single artifact. Intended to be regenerated on every commit (see
@@ -24,20 +25,22 @@ const PUPPETEER_CONFIG = path.join(REPO_ROOT, "tools", "mermaid-render", "puppet
 const TMP_DIR = path.join(TOOL_DIR, ".tmp");
 const OUTPUT_PATH = path.resolve(REPO_ROOT, process.argv[2] || "dist/TDA4VM_Full_Requirements_Static.html");
 
-// Order mirrors index.md's topic table, then the vulnerability-analysis pair.
+// Order mirrors index.md -> Parking/index.md's topic table, then the vulnerability-analysis pair.
 const DOC_ORDER = [
   "index.md",
-  "TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md",
-  "TDA4VM_Secure_JTAG_Requirements.md",
-  "TDA4VM_SecureAccess_Requirements.md",
-  "TDA4VM_SecOC_Requirements.md",
-  "TDA4VM_Secure_Logging_Requirements.md",
-  "TDA4VM_OTA_FOTA_SOTA_Requirements.md",
-  "TDA4VM_Secure_Reprogramming_Requirements.md",
-  "TDA4VM_RTMD_Requirements.md",
-  "TDA4VM_Secure_Storage_Requirements.md",
-  "Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.md",
-  "Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.md",
+  "Parking/index.md",
+  "Parking/TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md",
+  "Parking/TDA4VM_Secure_JTAG_Requirements.md",
+  "Parking/TDA4VM_SecureAccess_Requirements.md",
+  "Parking/TDA4VM_SecOC_Requirements.md",
+  "Parking/TDA4VM_Secure_Logging_Requirements.md",
+  "Parking/TDA4VM_OTA_FOTA_SOTA_Requirements.md",
+  "Parking/TDA4VM_Secure_Reprogramming_Requirements.md",
+  "Parking/TDA4VM_RTMD_Requirements.md",
+  "Parking/TDA4VM_Secure_Storage_Requirements.md",
+  "Parking/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.md",
+  "Parking/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.md",
+  "SDV/index.md",
 ];
 
 const md = new MarkdownIt({ html: true, linkify: true, typographer: false });
@@ -46,7 +49,11 @@ fs.mkdirSync(TMP_DIR, { recursive: true });
 fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
 
 function slugFor(relPath) {
-  return path.basename(relPath, ".md");
+  const base = path.basename(relPath, ".md");
+  // index.md exists at multiple levels (root, Parking/, SDV/) - disambiguate anchors by folder.
+  const dir = path.dirname(relPath);
+  if (base === "index" && dir !== ".") return `${dir.toLowerCase()}-index`;
+  return base;
 }
 
 function stripFrontMatter(text) {
@@ -98,16 +105,22 @@ function preprocessBody(body) {
     (full, filename) => diagramDataUris.get(filename) || full
   );
 
-  // Liquid link to the TARA ECU-selector landing page -> the embedded dashboard
-  // section added further down in this same static document (see below).
+  // Liquid link to the Parking TARA dashboard -> the embedded dashboard section
+  // added further down in this same static document (see below).
   out = out.replace(
-    /\{\{\s*['"]\/TARA\/Ref\/index\.html['"]\s*\|\s*relative_url\s*\}\}/g,
+    /\{\{\s*['"]\/Parking\/TARA\/Ref\/index\.html['"]\s*\|\s*relative_url\s*\}\}/g,
     "#tara-parking-dashboard"
   );
 
-  // Liquid cross-doc links (index.md's topic table) -> in-page anchors.
+  // Liquid links to the top-level ECU landing pages -> in-page anchors.
   out = out.replace(
-    /\{\{\s*['"]\/(?:Vulnerability_Analysis\/)?([^'"/]+)\.html['"]\s*\|\s*relative_url\s*\}\}/g,
+    /\{\{\s*['"]\/(Parking|SDV)\/['"]\s*\|\s*relative_url\s*\}\}/g,
+    (full, ecu) => `#${ecu.toLowerCase()}-index`
+  );
+
+  // Liquid cross-doc links (Parking/index.md's topic table) -> in-page anchors.
+  out = out.replace(
+    /\{\{\s*['"]\/(?:Parking\/)?(?:Vulnerability_Analysis\/)?([^'"/]+)\.html['"]\s*\|\s*relative_url\s*\}\}/g,
     (full, basename) => `#${basename}`
   );
 
@@ -137,23 +150,24 @@ for (const relPath of DOC_ORDER) {
   console.log(`Rendered ${relPath} -> #${slug}`);
 }
 
-// TARA/Ref/*.html are interactive JS dashboards, not markdown - embed the Parking
-// dashboard directly (as a self-contained base64 data-URI iframe) so the offline
-// export carries the same interactive TARA content as the live site, not just a link.
-const taraParkingPath = path.join(REPO_ROOT, "TARA", "Ref", "TARA_PARKING.html");
+// Parking/TARA/Ref/*.html are interactive JS dashboards, not markdown - embed the
+// Parking dashboard directly (as a self-contained base64 data-URI iframe) so the
+// offline export carries the same interactive TARA content as the live site, not
+// just a link.
+const taraParkingPath = path.join(REPO_ROOT, "Parking", "TARA", "Ref", "TARA_PARKING.html");
 const taraParkingDataUri = htmlToDataUri(taraParkingPath);
 sections.push({
   slug: "tara-parking-dashboard",
   title: "TARA Dashboards",
-  html: `<p>The live site's <a href="https://vinodneelakantam.github.io/Sec_Concepts_Req_tracability/TARA/Ref/index.html">TARA ECU selector</a>
-lets you pick an ECU (Parking or SDV) and view its interactive Threat Analysis and Risk Assessment
-dashboard, plus a \u201cFull Report\u201d tab linking to the vulnerability analysis report included
-elsewhere in this document. The SDV ECU option is still TBD.</p>
+  html: `<p>The live site's <a href="https://vinodneelakantam.github.io/Sec_Concepts_Req_tracability/Parking/TARA/Ref/index.html">Parking TARA dashboard</a>
+shows its interactive Threat Analysis and Risk Assessment table, plus a \u201cFull Report\u201d tab
+linking to the vulnerability analysis report included elsewhere in this document. The SDV ECU
+option is still TBD (see the <a href="#sdv-index">SDV section</a>).</p>
 <p>The Parking ECU dashboard is embedded below, fully interactive (editable scores, risk/concept
 filters, XLSX export) exactly as it appears on the live site:</p>
 <iframe src="${taraParkingDataUri}" style="width:100%;height:1000px;border:1px solid #d0d7de;border-radius:6px;" title="TARA Parking Dashboard"></iframe>`,
 });
-console.log("Embedded TARA/Ref/TARA_PARKING.html -> #tara-parking-dashboard");
+console.log("Embedded Parking/TARA/Ref/TARA_PARKING.html -> #tara-parking-dashboard");
 
 let commitSha = "unknown";
 try {

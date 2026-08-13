@@ -21,7 +21,8 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
    which page applies) and pull real message names, field names, and constraints. Never invent a
    plausible-sounding TISCI message or eFuse field — if a claim can't be grounded, say so and either
    fetch more docs or phrase the requirement generically instead of inventing a fake TI-specific detail.
-3. **Create `TDA4VM_<Topic>_Requirements.md`** at the workspace root, following the exact 6-section
+3. **Create `Parking/TDA4VM_<Topic>_Requirements.md`** (Parking ECU docs live under `Parking/`;
+   see the domain skill's "Site structure" note), following the exact 6-section
    structure from the domain skill (the flow: FSC(→FSR) → System Requirements + System Static
    Architecture → TSC(→TSR) → Hardware Requirements + Hardware Static Architecture → Software
    Requirements + Software Static & Dynamic Architecture → HSI):
@@ -52,6 +53,8 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
    new file, to confirm nothing regressed.
 7. **Update repo bookkeeping** once the new doc is validated:
    - Add a row to the domain skill's "Repo document set" table and bump the topic-document count.
+   - Add a row to `Parking/index.md`'s topics table and to `README.md`'s topics table (both use
+     `Parking/<file>.md` paths).
    - Add the new ID suffix to the taxonomy example line.
    - Add any new TI reference links used to the "Reference documentation" section.
    - If new grounded facts were learned (new TISCI messages, eFuse fields, hardware behavior), add
