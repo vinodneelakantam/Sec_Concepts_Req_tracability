@@ -12,11 +12,6 @@ TDA4VM (TI Jacinto 7 / J721E) ADAS ECU cybersecurity requirements documents, a T
 and a vulnerability analysis report/evidence set, all scoped to the Parking Assist / Surround
 View System (SVS) ECU.
 
-Each requirements document follows the same flow: **TARA (→CSG) → FSC (→FSR) → System
-Requirements + System Static Architecture → TSC (→TSR) → Hardware Requirements + Hardware Static
-Architecture → Software Requirements + Software Static & Dynamic Architecture → HSI**, using a
-consistent CSG/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
-
 ## Topics
 
 | Document | Topic |
