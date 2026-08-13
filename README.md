@@ -13,9 +13,9 @@ AUTOSAR SecOC).
 ## What's in here
 
 Each `TDA4VM_*_Requirements.md` file covers one security concept end-to-end, following the flow
-**FSC (→FSR) → System Requirements + System Static Architecture → TSC (→TSR) → Hardware
-Requirements + Hardware Static Architecture → Software Requirements + Software Static & Dynamic
-Architecture → HSI**, structured as six sections:
+**TARA (→CSG) → FSC (→FSR) → System Requirements + System Static Architecture → TSC (→TSR) →
+Hardware Requirements + Hardware Static Architecture → Software Requirements + Software Static &
+Dynamic Architecture → HSI**, structured as six sections:
 
 1. **Functional Security Concept** - the CSG (cybersecurity goal), the overarching FSC strategy
    realizing it, and the decomposed FSR.
@@ -68,7 +68,7 @@ Content is organized per ECU. The landing page lets you pick one:
 | [`Parking/`](Parking/) | ADAS Parking Assist / Surround View System (SVS) | All 9 requirements docs + vulnerability analysis + TARA dashboard |
 | [`SDV/`](SDV/) | Software Defined Vehicle platform | TBD |
 
-Topics currently covered (Parking ECU):
+## Topics (Parking ECU)
 
 | Document | Topic |
 |---|---|
@@ -83,9 +83,7 @@ Topics currently covered (Parking ECU):
 | [Parking/TDA4VM_Secure_Storage_Requirements.md](Parking/TDA4VM_Secure_Storage_Requirements.md) | Secure storage of keys/credentials at rest |
 | [Parking/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.md](Parking/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.md) | ISO 21434 continuous vulnerability monitoring/analysis/management (process doc) |
 | [Parking/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.md](Parking/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.md) | Point-in-time SVS/Parking Assist vulnerability analysis report + evidence appendices |
-
-An interactive TARA dashboard for the Parking ECU lives under
-[`Parking/TARA/Ref/`](Parking/TARA/Ref/).
+| [`Parking/TARA/Ref/`](Parking/TARA/Ref/) | TARA dashboard |
 
 ## Offline single-file export
 

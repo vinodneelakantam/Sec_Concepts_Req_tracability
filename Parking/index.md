@@ -12,10 +12,10 @@ TDA4VM (TI Jacinto 7 / J721E) ADAS ECU cybersecurity requirements documents, a T
 and a vulnerability analysis report/evidence set, all scoped to the Parking Assist / Surround
 View System (SVS) ECU.
 
-Each requirements document follows the same flow: **FSC (→FSR) → System Requirements + System
-Static Architecture → TSC (→TSR) → Hardware Requirements + Hardware Static Architecture →
-Software Requirements + Software Static & Dynamic Architecture → HSI**, using a consistent
-CSG/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
+Each requirements document follows the same flow: **TARA (→CSG) → FSC (→FSR) → System
+Requirements + System Static Architecture → TSC (→TSR) → Hardware Requirements + Hardware Static
+Architecture → Software Requirements + Software Static & Dynamic Architecture → HSI**, using a
+consistent CSG/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
 
 ## Topics
 
@@ -30,7 +30,7 @@ CSG/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
 | [Secure Reprogramming]({{ "/Parking/TDA4VM_Secure_Reprogramming_Requirements.html" | relative_url }}) | Secure ECU reprogramming |
 | [RTMD]({{ "/Parking/TDA4VM_RTMD_Requirements.html" | relative_url }}) | Runtime tamper monitoring and detection |
 | [Secure Storage]({{ "/Parking/TDA4VM_Secure_Storage_Requirements.html" | relative_url }}) | Secure storage of keys/credentials at rest |
-| [TARA Dashboard]({{ "/Parking/TARA/Ref/index.html" | relative_url }}) | Interactive Threat Analysis and Risk Assessment scoring dashboard (asset/threat/risk table, live scoring, filtering, XLSX export) |
+| [Parking/TARA/Ref/]({{ "/Parking/TARA/Ref/index.html" | relative_url }}) | TARA dashboard |
 
 ## Vulnerability analysis: process vs. deliverable
 
