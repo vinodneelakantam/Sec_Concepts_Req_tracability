@@ -6,6 +6,7 @@ on:
     paths:
       - "**/*.md"
       - "assets/diagrams/**"
+      - "TARA/**"
       - "tools/mermaid-render/**"
       - "tools/build-static-html/**"
       - ".github/workflows/build-static-html.yml"

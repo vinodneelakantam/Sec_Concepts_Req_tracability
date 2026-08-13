@@ -41,6 +41,13 @@ These two documents are deliberately kept separate and live together under `Vuln
 | [Vulnerability Management Process]({{ "/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.html" | relative_url }}) | **Requirements doc.** Defines the ongoing ISO 21434 continuous-cybersecurity-activity capability (SBOM/CVE monitoring, TARA re-assessment, risk-treatment routing) using this repo's CSG/FSR/SYSR/TSC/TSR taxonomy. Says a capability must exist - contains no analysis of a specific subsystem. |
 | [SVS / Parking Assist Vulnerability Analysis Report]({{ "/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.html" | relative_url }}) | **Point-in-time report.** One concrete engagement deliverable produced *by* that process for the SVS/Parking Assist subsystem: attack surfaces, STRIDE, CVSS-scored risk matrix, case-study narratives, and evidence appendices (CAN/UDS logs, pen-test findings, static/dynamic/fuzz results). |
 
+## TARA dashboards
+
+Interactive, self-contained TARA (Threat Analysis and Risk Assessment) scoring dashboards live under
+`TARA/Ref/`. Start at the [TARA ECU selector]({{ "/TARA/Ref/index.html" | relative_url }}) to pick an
+ECU (Parking or SDV) and view its full asset/threat/risk table with live scoring, filtering, and
+XLSX export.
+
 ## Requirement ID taxonomy
 
 - **CSG** - Cybersecurity Goal (what must be true)

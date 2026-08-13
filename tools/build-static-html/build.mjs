@@ -62,6 +62,11 @@ function pngToDataUri(pngPath) {
   return `data:image/png;base64,${buf.toString("base64")}`;
 }
 
+function htmlToDataUri(htmlPath) {
+  const buf = fs.readFileSync(htmlPath);
+  return `data:text/html;base64,${buf.toString("base64")}`;
+}
+
 let mermaidCounter = 0;
 function renderMermaidToDataUri(source) {
   const base = `inline-${mermaidCounter++}`;
@@ -91,6 +96,13 @@ function preprocessBody(body) {
   out = out.replace(
     /\{\{\s*['"]\/assets\/diagrams\/([^'"]+\.png)['"]\s*\|\s*relative_url\s*\}\}/g,
     (full, filename) => diagramDataUris.get(filename) || full
+  );
+
+  // Liquid link to the TARA ECU-selector landing page -> the embedded dashboard
+  // section added further down in this same static document (see below).
+  out = out.replace(
+    /\{\{\s*['"]\/TARA\/Ref\/index\.html['"]\s*\|\s*relative_url\s*\}\}/g,
+    "#tara-parking-dashboard"
   );
 
   // Liquid cross-doc links (index.md's topic table) -> in-page anchors.
@@ -124,6 +136,24 @@ for (const relPath of DOC_ORDER) {
   sections.push({ slug, title: title || slug, html });
   console.log(`Rendered ${relPath} -> #${slug}`);
 }
+
+// TARA/Ref/*.html are interactive JS dashboards, not markdown - embed the Parking
+// dashboard directly (as a self-contained base64 data-URI iframe) so the offline
+// export carries the same interactive TARA content as the live site, not just a link.
+const taraParkingPath = path.join(REPO_ROOT, "TARA", "Ref", "TARA_PARKING.html");
+const taraParkingDataUri = htmlToDataUri(taraParkingPath);
+sections.push({
+  slug: "tara-parking-dashboard",
+  title: "TARA Dashboards",
+  html: `<p>The live site's <a href="https://vinodneelakantam.github.io/Sec_Concepts_Req_tracability/TARA/Ref/index.html">TARA ECU selector</a>
+lets you pick an ECU (Parking or SDV) and view its interactive Threat Analysis and Risk Assessment
+dashboard, plus a \u201cFull Report\u201d tab linking to the vulnerability analysis report included
+elsewhere in this document. The SDV ECU option is still TBD.</p>
+<p>The Parking ECU dashboard is embedded below, fully interactive (editable scores, risk/concept
+filters, XLSX export) exactly as it appears on the live site:</p>
+<iframe src="${taraParkingDataUri}" style="width:100%;height:1000px;border:1px solid #d0d7de;border-radius:6px;" title="TARA Parking Dashboard"></iframe>`,
+});
+console.log("Embedded TARA/Ref/TARA_PARKING.html -> #tara-parking-dashboard");
 
 let commitSha = "unknown";
 try {

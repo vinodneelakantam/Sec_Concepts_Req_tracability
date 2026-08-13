@@ -1,0 +1,263 @@
+<!-- TARA landing page: choose an ECU to view its Threat Analysis and Risk Assessment dashboard -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>TARA Dashboard - Select ECU</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f8;
+  }
+
+  #selector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+    box-sizing: border-box;
+  }
+
+  #selector h1 {
+    color: #1a365d;
+    margin-bottom: 4px;
+  }
+
+  #selector p.subtitle {
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 32px;
+  }
+
+  .ecu-cards {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ecu-card {
+    width: 260px;
+    padding: 28px 20px;
+    background: white;
+    border: 2px solid #1a365d;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .ecu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+
+  .ecu-card h2 {
+    color: #1a365d;
+    margin: 0 0 8px 0;
+  }
+
+  .ecu-card p {
+    color: #555;
+    font-size: 13px;
+    margin: 0;
+  }
+
+  .ecu-card.tbd {
+    border-color: #999;
+    opacity: 0.85;
+  }
+
+  .ecu-card.tbd h2 {
+    color: #666;
+  }
+
+  .badge-tbd {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 2px 10px;
+    background: #e0e0e0;
+    color: #555;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+
+  #viewer {
+    display: none;
+    height: 100vh;
+    flex-direction: column;
+  }
+
+  #viewer.active {
+    display: flex;
+  }
+
+  #selector.hidden {
+    display: none;
+  }
+
+  #viewer-toolbar {
+    flex: 0 0 auto;
+    background: #1a365d;
+    color: white;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #viewer-toolbar button {
+    background: #2ed573;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  #viewer-toolbar button:hover {
+    background: #26af5f;
+  }
+
+  #viewer-toolbar span {
+    font-weight: bold;
+  }
+
+  #viewer-tabs {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  #viewer-tabs button {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  #viewer-tabs button.active {
+    background: white;
+    color: #1a365d;
+    border-color: white;
+  }
+
+  #viewer-frame {
+    flex: 1 1 auto;
+    border: none;
+    width: 100%;
+  }
+
+  #tbd-panel {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+  }
+
+  #tbd-panel-inner {
+    text-align: center;
+    color: #555;
+  }
+
+  #tbd-panel-inner h2 {
+    color: #1a365d;
+  }
+</style>
+</head>
+<body>
+
+<div id="selector">
+  <h1>Cybersecurity TARA Dashboard</h1>
+  <p class="subtitle">Select an ECU to view its Threat Analysis and Risk Assessment.</p>
+  <div class="ecu-cards">
+    <div class="ecu-card" onclick="selectEcu('parking')">
+      <h2>PARKING</h2>
+      <p>ADAS Parking Assist / Surround View System (SVS) ECU</p>
+    </div>
+    <div class="ecu-card tbd" onclick="selectEcu('sdv')">
+      <h2>SDV</h2>
+      <p>Software Defined Vehicle platform</p>
+      <div class="badge-tbd">TBD</div>
+    </div>
+  </div>
+</div>
+
+<div id="viewer">
+  <div id="viewer-toolbar">
+    <button onclick="showSelector()">&larr; Back</button>
+    <span id="viewer-title"></span>
+    <div id="viewer-tabs" style="display:none;">
+      <button id="tab-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+      <button id="tab-report" onclick="switchTab('report')">Full Report</button>
+    </div>
+  </div>
+  <iframe id="viewer-frame" src="about:blank"></iframe>
+  <div id="tbd-panel" style="display:none;">
+    <div id="tbd-panel-inner">
+      <h2>SDV ECU dashboard - TBD</h2>
+      <p>Content for the SDV ECU has not been added to this landing page yet.</p>
+      <p>It will be filled in later.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const ecuContent = {
+  parking: {
+    title: 'PARKING - ADAS Parking Assist / SVS',
+    dashboard: 'TARA_PARKING.html',
+    report: '../../Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.html'
+  }
+};
+
+function selectEcu(ecu) {
+  document.getElementById('selector').classList.add('hidden');
+  document.getElementById('viewer').classList.add('active');
+
+  const tbdPanel = document.getElementById('tbd-panel');
+  const title = document.getElementById('viewer-title');
+  const tabs = document.getElementById('viewer-tabs');
+
+  if (ecu === 'parking') {
+    tbdPanel.style.display = 'none';
+    title.innerText = ecuContent.parking.title;
+    tabs.style.display = 'flex';
+    switchTab('dashboard');
+  } else {
+    document.getElementById('viewer-frame').style.display = 'none';
+    document.getElementById('viewer-frame').src = 'about:blank';
+    tabs.style.display = 'none';
+    title.innerText = 'SDV - TBD';
+    tbdPanel.style.display = 'flex';
+  }
+}
+
+function switchTab(tab) {
+  const frame = document.getElementById('viewer-frame');
+  const tbdPanel = document.getElementById('tbd-panel');
+
+  tbdPanel.style.display = 'none';
+  frame.style.display = 'block';
+  frame.src = ecuContent.parking[tab];
+
+  document.getElementById('tab-dashboard').classList.toggle('active', tab === 'dashboard');
+  document.getElementById('tab-report').classList.toggle('active', tab === 'report');
+}
+
+function showSelector() {
+  document.getElementById('viewer').classList.remove('active');
+  document.getElementById('selector').classList.remove('hidden');
+  document.getElementById('viewer-frame').src = 'about:blank';
+}
+</script>
+
+</body></html>
