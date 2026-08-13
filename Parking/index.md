@@ -30,6 +30,7 @@ CSG/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
 | [Secure Reprogramming]({{ "/Parking/TDA4VM_Secure_Reprogramming_Requirements.html" | relative_url }}) | Secure ECU reprogramming |
 | [RTMD]({{ "/Parking/TDA4VM_RTMD_Requirements.html" | relative_url }}) | Runtime tamper monitoring and detection |
 | [Secure Storage]({{ "/Parking/TDA4VM_Secure_Storage_Requirements.html" | relative_url }}) | Secure storage of keys/credentials at rest |
+| [TARA Dashboard]({{ "/Parking/TARA/Ref/index.html" | relative_url }}) | Interactive Threat Analysis and Risk Assessment scoring dashboard (asset/threat/risk table, live scoring, filtering, XLSX export) |
 
 ## Vulnerability analysis: process vs. deliverable
 
@@ -40,15 +41,25 @@ These two documents are deliberately kept separate and live together under `Park
 | [Vulnerability Management Process]({{ "/Parking/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.html" | relative_url }}) | **Requirements doc.** Defines the ongoing ISO 21434 continuous-cybersecurity-activity capability (SBOM/CVE monitoring, TARA re-assessment, risk-treatment routing) using this repo's CSG/FSR/SYSR/TSC/TSR taxonomy. Says a capability must exist - contains no analysis of a specific subsystem. |
 | [SVS / Parking Assist Vulnerability Analysis Report]({{ "/Parking/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.html" | relative_url }}) | **Point-in-time report.** One concrete engagement deliverable produced *by* that process for the SVS/Parking Assist subsystem: attack surfaces, STRIDE, CVSS-scored risk matrix, case-study narratives, and evidence appendices (CAN/UDS logs, pen-test findings, static/dynamic/fuzz results). |
 
-## TARA dashboard
-
-An interactive, self-contained TARA (Threat Analysis and Risk Assessment) scoring dashboard for
-this ECU lives under `Parking/TARA/Ref/`. Open the
-[Parking TARA dashboard]({{ "/Parking/TARA/Ref/index.html" | relative_url }}) to view the full
-asset/threat/risk table with live scoring, filtering, and XLSX export, plus a tab linking to the
-full vulnerability analysis report above.
-
 ## Requirement ID taxonomy
+
+TARA (Threat Analysis and Risk Assessment - see the TARA Dashboard above) is what supplies the
+CSG: every Cybersecurity Goal comes from a TARA risk-treatment decision, and each subsequent ID in
+the chain below is derived from the one before it, in order:
+
+```mermaid
+graph LR
+    TARA["TARA (Threat Analysis and Risk Assessment)"] --> CSG["CSG (Cybersecurity Goal)"]
+    CSG --> FSC["FSC (Functional Security Concept)"]
+    FSC --> FSR["FSR (Functional Security Requirements)"]
+    FSR --> SYSR["SYSR (System Requirement)"]
+    SYSR --> TSC["TSC (Technical Security Concept)"]
+    TSC --> TSR["TSR (Technical Security Requirements)"]
+    TSR --> HWR["HWR (Hardware Requirement)"]
+    TSR --> SWR["SWR (Software Requirement)"]
+    HWR --> HSI["HSI (Hardware-Software Interface)"]
+    SWR --> HSI
+```
 
 - **CSG** - Cybersecurity Goal (what must be true)
 - **FSC** - Functional Security Concept (the overarching strategy for realizing the CSGs)

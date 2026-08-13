@@ -30,7 +30,24 @@ Architecture → HSI**, structured as six sections:
 6. **Hardware-Software Interface (HSI)** - the register/API/message-level contract between the
    hardware and software layers (`HSI-*`).
 
-Requirements are layered per topic using a consistent ID taxonomy:
+Requirements are layered per topic using a consistent ID taxonomy. TARA (Threat Analysis and Risk
+Assessment - see the Parking ECU's TARA dashboard) is what supplies the CSG: every Cybersecurity
+Goal comes from a TARA risk-treatment decision, and each subsequent ID in the chain below is
+derived from the one before it, in order:
+
+```mermaid
+graph LR
+    TARA["TARA (Threat Analysis and Risk Assessment)"] --> CSG["CSG (Cybersecurity Goal)"]
+    CSG --> FSC["FSC (Functional Security Concept)"]
+    FSC --> FSR["FSR (Functional Security Requirements)"]
+    FSR --> SYSR["SYSR (System Requirement)"]
+    SYSR --> TSC["TSC (Technical Security Concept)"]
+    TSC --> TSR["TSR (Technical Security Requirements)"]
+    TSR --> HWR["HWR (Hardware Requirement)"]
+    TSR --> SWR["SWR (Software Requirement)"]
+    HWR --> HSI["HSI (Hardware-Software Interface)"]
+    SWR --> HSI
+```
 
 - **CSG** - Cybersecurity Goal (what must be true)
 - **FSC** - Functional Security Concept (the overarching strategy for realizing the CSGs)
