@@ -1,0 +1,707 @@
+
+<!-- ADAS Parking Assist / SVS TARA - derived from TARA_SDV_ref.html dashboard template -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>
+.lookup-container{
+  display:flex;
+  gap:20px;
+  margin-bottom:20px;
+}
+
+.lookup-box{
+  flex:1;
+}
+
+.lookup-table th {background:#1a365d;color:white;}
+.lookup-low {background:#e6ffcc;}
+.lookup-medium {background:#ffe5cc;}
+.lookup-high {background:#ffcccc;}
+.lookup-critical {background:#ff9999;color:white;font-weight:bold;}
+
+.lookup-box table{
+  width:100%;
+  font-size:11px;
+}
+.btn-export {
+  background-color: #2ed573;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn-export:hover {
+  background-color: #26af5f;
+}
+</style>
+
+<!-- ===== LOOKUP TABLES SIDE-BY-SIDE ===== -->
+</head><body><div class="lookup-container">
+
+  <!-- Likelihood -->
+
+
+  <!-- Impact -->
+  <div class="lookup-box">
+    <h3>Impact (I = S master)</h3>
+    <table class="lookup-table">
+      <tbody><tr>
+        <th>Score</th><th>S</th><th>F</th><th>O</th><th>P</th>
+      </tr>
+      <tr class="lookup-low">
+        <td>1</td><td>None</td><td>Negl.</td><td>No impact</td><td>None</td>
+      </tr>
+      <tr class="lookup-low">
+        <td>2</td><td>Minor</td><td>Low</td><td>Minor</td><td>Limited</td>
+      </tr>
+      <tr class="lookup-medium">
+        <td>3</td><td>Moderate</td><td>Medium</td><td>Moderate</td><td>Sensitive</td>
+      </tr>
+      <tr class="lookup-high">
+        <td>4</td><td>Severe</td><td>High</td><td>Major</td><td>Serious</td>
+      </tr>
+      <tr class="lookup-critical">
+        <td>5</td><td>Critical</td><td>Very High</td><td>Catastrophic</td><td>Critical Breach</td>
+      </tr>
+    </tbody></table>
+  </div>
+
+  <!-- Risk -->
+  <div class="lookup-box">
+    <h3>Risk (RV)</h3>
+    <table class="lookup-table">
+      <tbody><tr><th>RV</th><th>Level</th></tr>
+      <tr class="lookup-low"><td>1-8</td><td>Low</td></tr>
+      <tr class="lookup-medium"><td>9-15</td><td>Medium</td></tr>
+      <tr class="lookup-high"><td>16-25</td><td>High</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- Risk Assessment -->
+  <div class="lookup-box">
+    <h3>Risk Assessment</h3>
+    <table class="lookup-table">
+      <tbody><tr><th>Option</th><th>Description</th></tr>
+      <tr class="lookup-low"><td>accepted</td><td>Risk is accepted without additional treatment.</td></tr>
+      <tr class="lookup-medium"><td>mitigated</td><td>Controls are applied to reduce likelihood/impact.</td></tr>
+      <tr class="lookup-medium"><td>transfered</td><td>Risk ownership is shifted (e.g., contract/insurance).</td></tr>
+      <tr class="lookup-medium"><td>avoid</td><td>Activity/path is changed to eliminate the risk.</td></tr>
+    </tbody></table>
+  </div>
+
+</div>
+
+<!-- Likelihood Total (Custom Scale) -->
+<div class="lookup-box" style="margin-bottom: 20px;">
+<h3>Likelihood (L = max(E, Ex, Eq, Op, K))</h3>
+
+  <table class="lookup-table">
+<tbody><tr><th>Score</th><th>Description</th><th>L Value</th></tr>
+<!-- 1 -->
+<tr class="lookup-low"><td>1</td><td>Very Low</td><td>1</td></tr>
+<!-- 2 -->
+<tr class="lookup-low"><td>2</td><td>Low</td><td>2</td></tr>
+<!-- 3 -->
+<tr class="lookup-medium"><td>3</td><td>Moderate</td><td>3</td></tr>
+<!-- 4 -->
+<tr class="lookup-high"><td>4</td><td>High</td><td>4</td></tr>
+<!-- 5 -->
+<tr class="lookup-critical"><td>5</td><td>Very High</td><td>5</td></tr>
+</tbody></table>
+</div>
+<style>
+  .ref-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  
+  .ref-box {
+    flex: 1;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  
+  .ref-box h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #1e293b;
+    font-size: 14px;
+    border-bottom: 2px solid #cbd5e1;
+    padding-bottom: 5px;
+  }
+  
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    text-align: left;
+  }
+  
+  .ref-table th {
+    background: #475569;
+    color: white;
+    font-weight: 600;
+    padding: 6px 10px;
+  }
+  
+  .ref-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: top;
+  }
+  
+  .ref-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .abbr-cell {
+    font-weight: bold;
+    color: #0f172a;
+    width: 15%;
+  }
+  
+  .name-cell {
+    font-weight: 500;
+    color: #2563eb;
+    width: 25%;
+  }
+
+  /* Responsive breakdown for smaller screens */
+  @media (max-width: 768px) {
+    .ref-container {
+      flex-direction: column;
+      gap: 15px;
+    }
+  }
+</style>
+
+<div class="ref-container">
+
+  <div class="ref-box">
+    <h3>SFOP (Impact Categories)</h3>
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Dimension</th>
+          <th>Description (ISO/SAE 21434)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="abbr-cell">S</td>
+          <td class="name-cell">Safety</td>
+          <td>Potential severe consequences or physical harm to human life/health.</td>
+        </tr>
+        <tr>
+          <td class="abbr-cell">F</td>
+          <td class="name-cell">Financial</td>
+          <td>Monetary loss including repair costs, vehicle damage, or legal penalties.</td>
+        </tr>
+        <tr>
+          <td class="abbr-cell">O</td>
+          <td class="name-cell">Operational</td>
+          <td>Impact on vehicle performance, features, or the impairment of primary functions.</td>
+        </tr>
+        <tr>
+          <td class="abbr-cell">P</td>
+          <td class="name-cell">Privacy</td>
+          <td>Unauthorized access, extraction, or manipulation of private user and vehicle data.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ref-box">
+    <h3>Attack Feasibility Parameters</h3>
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Parameter</th>
+          <th>Description (Common Criteria)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="abbr-cell">E</td>
+          <td class="name-cell">Elapsed Time</td>
+          <td>The duration required to identify, design, and execute the attack path.</td>
+        </tr>
+        <tr>
+          <td class="abbr-cell">ex</td>
+          <td class="name-cell">Expertise</td>
+          <td>The specific technical knowledge and cybersecurity skills required by an attacker.</td>
+        </tr>
+        <tr>
+          <td class="abbr-cell">Eq</td>
+          <td class="name-cell">Equipment</td>
+          <td>The specialization and hardware/software tools needed to complete the exploit.</td>
+        </tr>
+        <tr>
+          <td class="abbr-cell">Op</td>
+          <td class="name-cell">Opportunity</td>
+          <td>The physical or logical proximity and access duration needed for the exploit.</td>
+        </tr>
+        <tr>
+          <td class="abbr-cell">K</td>
+          <td class="name-cell">Knowledge</td>
+          <td>The level of strict confidentiality of the system details required to execute.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<hr>
+
+
+
+
+
+<title>ADAS PARKING ASSIST / SVS FULL TARA DASHBOARD</title>
+<style>
+body{font-family:Arial;margin:20px}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid #ccc;padding:5px;font-size:11px}
+th{background:#1a365d;color:white}
+tr.high{background:#ffcccc}
+tr.medium{background:#ffe5cc}
+tr.low{background:#e6ffcc}
+button{margin:5px;padding:6px 10px}
+input{width:40px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script>
+function normalizeScore(value){
+ let num = parseInt(value, 10);
+ if (Number.isNaN(num)) return 0;
+ if (num < 1) return 1;
+ if (num > 5) return 5;
+ return num;
+}
+
+function buildScoreSelect(value, className, row){
+ const select = document.createElement('select');
+ select.className = className;
+ select.setAttribute('oninput', 'calcRow(this.parentElement.parentElement)');
+
+ for (let i = 1; i <= 5; i += 1) {
+   const option = document.createElement('option');
+   option.value = String(i);
+   option.textContent = String(i);
+   select.appendChild(option);
+ }
+
+ const normalized = normalizeScore(value) || 1;
+ select.value = String(normalized);
+
+ select.addEventListener('change', () => {
+   if (row) {
+     calcRow(row);
+   }
+ });
+
+ return select;
+}
+
+function convertScoreInputsToDropdowns(){
+ const scoreInputs = Array.from(document.querySelectorAll('#tbl tbody input.l, #tbl tbody input.i'));
+ scoreInputs.forEach((input) => {
+   const row = input.closest('tr');
+   const cell = input.parentElement;
+   if (!row || !cell) return;
+
+   const className = input.classList.contains('l') ? 'l' : 'i';
+   const select = buildScoreSelect(input.value, className, row);
+   cell.replaceChild(select, input);
+ });
+}
+
+function setupRiskAssessmentTracking(){
+ const selects = Array.from(document.querySelectorAll('#tbl tbody .riskAssessmentSelect'));
+ selects.forEach((select) => {
+   select.addEventListener('change', () => {
+     select.dataset.userSet = '1';
+   });
+   if (select.value) {
+     select.dataset.userSet = '1';
+   }
+ });
+}
+
+function calcRow(row){
+ let l_inputs = Array.from(row.querySelectorAll('.l'));
+ let i_inputs = Array.from(row.querySelectorAll('.i'));
+
+ let l_vals = l_inputs.map(input => {
+   let score = normalizeScore(input.value);
+   input.value = score || '';
+   return score;
+ });
+
+ let i_vals = i_inputs.map(input => {
+   let score = normalizeScore(input.value);
+   input.value = score || '';
+   return score;
+ });
+
+ let L = l_vals.length ? Math.max(...l_vals) : 0;
+ let I = i_vals.length ? i_vals[0] : 0;
+
+ row.querySelector('.totalL').innerText = L;
+ row.querySelector('.totalI').innerText = I;
+
+ let rv = L * I;
+ row.querySelector('.rv').innerText = rv;
+
+ let risk = 'Low';
+ if (rv >= 16) risk = 'High';
+ else if (rv >= 9) risk = 'Medium';
+
+ row.querySelector('.risk').innerText = risk;
+ row.setAttribute('data-risk', risk);
+
+ let defaultRiskAssessment = 'accepted';
+ if (risk === 'High' || risk === 'Medium') defaultRiskAssessment = 'mitigated';
+
+ const riskAssessmentSelect = row.querySelector('.riskAssessmentSelect');
+ if (riskAssessmentSelect && !riskAssessmentSelect.dataset.userSet) {
+   riskAssessmentSelect.value = defaultRiskAssessment;
+ }
+
+ const propertyText = (row.cells[1]?.innerText || '').trim().toLowerCase();
+ let securityGoal = 'Maintain required cybersecurity properties for this asset.';
+ if (propertyText === 'confidentiality' || propertyText === 'privacy') {
+   securityGoal = 'Prevent unauthorized disclosure of sensitive data.';
+ } else if (propertyText === 'integrity') {
+   securityGoal = 'Prevent unauthorized modification of data and functions.';
+ } else if (propertyText === 'availability') {
+   securityGoal = 'Ensure system and service availability when needed.';
+ } else if (propertyText === 'authentication') {
+   securityGoal = 'Verify identity before allowing access or communication.';
+ } else if (propertyText === 'authorization') {
+   securityGoal = 'Allow only permitted actions based on roles and policy.';
+ } else if (propertyText === 'accountability') {
+   securityGoal = 'Ensure actions are logged and traceable to an identity.';
+ } else if (propertyText === 'non-repudiation') {
+   securityGoal = 'Provide verifiable proof of performed actions.';
+ } else if (propertyText === 'isolation') {
+   securityGoal = 'Prevent lateral movement between separated domains.';
+ }
+
+ const securityGoalCell = row.querySelector('.securityGoal');
+ if (securityGoalCell) {
+   securityGoalCell.innerText = securityGoal;
+ }
+ 
+ // Apply background color directly onto rows dynamically
+ row.className = risk.toLowerCase();
+
+ saveDashboardState();
+}
+
+function getStorageKey(){
+ return 'tara_dashboard_state:' + window.location.pathname;
+}
+
+function saveDashboardState(){
+ const fields = Array.from(document.querySelectorAll('#tbl tbody input, #tbl tbody select'));
+ const values = fields.map(field => field.value);
+ try {
+   localStorage.setItem(getStorageKey(), JSON.stringify(values));
+ } catch (err) {
+   // Ignore storage errors (private mode/quota restrictions).
+ }
+}
+
+function loadDashboardState(){
+ let raw;
+ try {
+   raw = localStorage.getItem(getStorageKey());
+ } catch (err) {
+   return;
+ }
+
+ if (!raw) return;
+
+ let values;
+ try {
+   values = JSON.parse(raw);
+ } catch (err) {
+   return;
+ }
+
+ if (!Array.isArray(values)) return;
+
+ const fields = Array.from(document.querySelectorAll('#tbl tbody input, #tbl tbody select'));
+ fields.forEach((field, index) => {
+   if (typeof values[index] === 'string') {
+     field.value = values[index];
+     if (field.classList.contains('riskAssessmentSelect') && values[index]) {
+       field.dataset.userSet = '1';
+     }
+   }
+ });
+}
+
+let currentRiskFilter = 'All';
+let currentConceptFilter = 'All';
+
+// Strips parenthetical detail so variants of the same concept share one filter option.
+function getConceptTokens(text){
+ return (text || '').split('+').map(t => t.replace(/\([^)]*\)/g, '').trim()).filter(Boolean);
+}
+
+function populateConceptFilter(){
+ const select = document.getElementById('conceptFilter');
+ if (!select) return;
+ const cells = Array.from(document.querySelectorAll('#tbl tbody .cyberConcept'));
+ const tokens = new Set();
+ cells.forEach(cell => getConceptTokens(cell.textContent).forEach(t => tokens.add(t)));
+ Array.from(tokens).sort().forEach(t => {
+   const option = document.createElement('option');
+   option.value = t;
+   option.textContent = t;
+   select.appendChild(option);
+ });
+}
+
+function applyFilters(){
+ let rows=document.querySelectorAll('#tbl tbody tr');
+ rows.forEach(r=>{
+   const riskVal = r.getAttribute('data-risk');
+   const riskMatch = currentRiskFilter === 'All' || riskVal === currentRiskFilter;
+
+   const conceptCell = r.querySelector('.cyberConcept');
+   const conceptMatch = currentConceptFilter === 'All' ||
+     (conceptCell && getConceptTokens(conceptCell.textContent).includes(currentConceptFilter));
+
+   r.style.display = (riskMatch && conceptMatch) ? '' : 'none';
+ });
+}
+
+function filterRows(level){
+ currentRiskFilter = level;
+ applyFilters();
+}
+
+function filterByConcept(concept){
+ currentConceptFilter = concept;
+ applyFilters();
+}
+
+async function exportDashboardToXLSX() {
+  if (typeof ExcelJS === 'undefined') {
+    alert('Excel export library failed to load. Please check internet access and refresh the page.');
+    return;
+  }
+
+  const table = document.getElementById("tbl");
+  if (!table) return;
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('TARA Dashboard', {
+    views: [{ state: 'frozen', xSplit: 4, ySplit: 4 }]
+  });
+
+  const title = 'ADAS PARKING ASSIST / SVS FULL TARA DASHBOARD';
+  const generatedAt = `Generated on: ${new Date().toLocaleString()}`;
+
+  const headerCells = Array.from(table.querySelectorAll('thead th')).map(th => (th.innerText || th.textContent || '').trim());
+  const colCount = headerCells.length;
+  if (colCount === 0) return;
+
+  worksheet.addRow([title]);
+  worksheet.addRow([generatedAt]);
+  worksheet.addRow([]);
+  worksheet.addRow(headerCells);
+
+  const titleRow = worksheet.getRow(1);
+  titleRow.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
+  titleRow.alignment = { horizontal: 'center', vertical: 'middle' };
+  titleRow.height = 24;
+  titleRow.getCell(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF1A365D' }
+  };
+  worksheet.mergeCells(1, 1, 1, colCount);
+
+  const genRow = worksheet.getRow(2);
+  genRow.font = { italic: true, color: { argb: 'FF4A5568' } };
+  worksheet.mergeCells(2, 1, 2, colCount);
+
+  const headerRow = worksheet.getRow(4);
+  headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  headerRow.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+  headerRow.height = 22;
+  headerRow.eachCell((cell) => {
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF2D3748' }
+    };
+    cell.border = {
+      top: { style: 'thin', color: { argb: 'FFCBD5E0' } },
+      left: { style: 'thin', color: { argb: 'FFCBD5E0' } },
+      bottom: { style: 'thin', color: { argb: 'FFCBD5E0' } },
+      right: { style: 'thin', color: { argb: 'FFCBD5E0' } }
+    };
+  });
+
+  const visibleRows = Array.from(table.querySelectorAll('tbody tr')).filter(row => row.style.display !== 'none');
+  visibleRows.forEach((row) => {
+    const cells = row.querySelectorAll('td');
+    const rowData = Array.from(cells).map(cell => {
+      const input = cell.querySelector('input');
+      const select = cell.querySelector('select');
+      const text = input ? input.value : (select ? select.value : (cell.innerText || cell.textContent || ''));
+      return text.trim();
+    });
+
+    const excelRow = worksheet.addRow(rowData);
+    excelRow.alignment = { vertical: 'top', wrapText: true };
+
+    // RV = L * I, where L is column J (10) and I is column O (15).
+    const currentRowNumber = excelRow.number;
+    excelRow.getCell(16).value = { formula: `J${currentRowNumber}*O${currentRowNumber}` };
+
+    const riskText = (row.querySelector('.risk')?.innerText || '').trim();
+    let riskFill = null;
+    if (riskText === 'High') riskFill = 'FFFFCCCC';
+    else if (riskText === 'Medium') riskFill = 'FFFFE5CC';
+    else if (riskText === 'Low') riskFill = 'FFE6FFCC';
+
+    if (riskFill) {
+      excelRow.eachCell((cell) => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: riskFill }
+        };
+      });
+    }
+
+    excelRow.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+      };
+    });
+  });
+
+  worksheet.autoFilter = {
+    from: { row: 4, column: 1 },
+    to: { row: 4, column: colCount }
+  };
+
+  worksheet.columns = headerCells.map((header, idx) => {
+    let width = Math.max(12, Math.min(60, header.length + 6));
+    if (idx === 0 || idx === 1) width = 24; // Asset/Property
+    if (idx === 2 || idx === 3) width = 50; // scenario text
+    if (idx >= 4 && idx <= 8) width = 10;   // E, Ex, Eq, Op, K
+    if (header === 'Risk Assessment') width = 28;
+    if (header === 'Security Goal') width = 52;
+    if (idx >= 9) width = Math.max(width, 12);
+    return { width };
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "parking_assist_full_tara_dashboard.xlsx");
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+window.onload = function() {
+  convertScoreInputsToDropdowns();
+  setupRiskAssessmentTracking();
+  loadDashboardState();
+  let rows = document.querySelectorAll('#tbl tbody tr');
+  rows.forEach(r => calcRow(r));
+  populateConceptFilter();
+};
+</script>
+
+
+<h2>ADAS PARKING ASSIST / SVS FULL TARA DASHBOARD</h2>
+<div>
+<button onclick="filterRows(&#39;All&#39;)">All</button>
+<button onclick="filterRows(&#39;High&#39;)">High</button>
+<button onclick="filterRows(&#39;Medium&#39;)">Medium</button>
+<button onclick="filterRows(&#39;Low&#39;)">Low</button>
+<label for="conceptFilter" style="margin-left:12px;">Cybersecurity Concept/Control:</label>
+<select id="conceptFilter" onchange="filterByConcept(this.value)">
+<option value="All">All</option>
+</select>
+<button class="btn-export" onclick="exportDashboardToXLSX()">Export Dashboard to XLSX</button>
+</div>
+<table id="tbl">
+<thead>
+<tr>
+<th>Asset</th><th>Property</th>
+<th>Damage Scenario</th><th>Threat Scenario</th>
+<th>E</th><th>Ex</th><th>Eq</th><th>Op</th><th>K</th>
+<th>L (max)</th>
+<th>S</th><th>F</th><th>O</th><th>P</th>
+<th>I (max of S)</th>
+<th>RV (L*I)</th><th>Risk</th>
+<th>Risk Assessment</th><th>Security Goal</th>
+<th>Cybersecurity Concept / Control</th>
+</tr>
+</thead>
+<tbody>
+<tr data-risk="Medium" class="medium"><td>Camera modules &amp; harness</td><td>Integrity</td><td>Parking maneuver proceeds on a false free-space/obstacle assessment, risking a low-speed collision or a missed pedestrian/obstacle.</td><td>[SYS-TS-01] Attacker projects a static/adversarial image pattern or replays a recorded frame into a camera&#39;s field of view to make the perception pipeline see a false free-space/obstacle state.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (sensor plausibility monitoring)</td></tr>
+<tr data-risk="High" class="high"><td>Camera modules &amp; harness</td><td>Integrity</td><td>Manipulated video injected upstream of plausibility checks corrupts the entire perception pipeline&#39;s view of the environment during a parking maneuver.</td><td>[SYS-TS-02] Compromised or physically substituted camera module injects a manipulated video stream directly onto the FPD-Link/GMSL link, bypassing plausibility checks in the ISP.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="5"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">5</td><td class="rv">20</td><td class="risk">High</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Communication / SecOC + RTMD (sensor plausibility monitoring)</td></tr>
+<tr data-risk="Medium" class="medium"><td>Ultrasonic sensors</td><td>Integrity</td><td>False-negative or false-positive obstacle readings cause a missed obstacle strike or an unnecessary emergency stop.</td><td>[SYS-TS-03] Ultrasonic echo spoofing/jamming causes false-negative (missed obstacle) or false-positive (phantom obstacle) readings.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (sensor plausibility monitoring)</td></tr>
+<tr data-risk="Medium" class="medium"><td>In-vehicle CAN bus</td><td>Availability</td><td>Emergency-stop signal is delayed on a starved bus, increasing the chance of a low-speed collision during an active parking maneuver.</td><td>[SYS-TS-04] CAN bus flooding (high-priority ID abuse) starves the parking-command frame&#39;s bus access budget, delaying an emergency-stop signal.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (runtime/anomaly monitoring)</td></tr>
+<tr data-risk="Low" class="low"><td>In-vehicle CAN bus</td><td>Non-repudiation</td><td>After an incident, investigators cannot prove which ECU originated a disputed actuation command, blocking root-cause and liability determination.</td><td>[SYS-TS-05] Absent per-frame authenticity binding makes it impossible to prove which ECU originated a given actuation command after an incident.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">1</td><td class="rv">3</td><td class="risk">Low</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted" selected>accepted</option><option value="mitigated">mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Communication / SecOC + Secure Logging</td></tr>
+<tr data-risk="High" class="high"><td>CAN bus / Actuator command path</td><td>Integrity</td><td>A forged or replayed actuation command drives an unintended steering or braking action during an automated parking maneuver.</td><td>[SYS-TS-06] Forged or replayed parking actuation command frame injected via a compromised gateway ECU or physical bus access, absent SecOC MAC/freshness enforcement.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="5"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">5</td><td class="rv">20</td><td class="risk">High</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Communication / SecOC</td></tr>
+<tr data-risk="High" class="high"><td>Automotive Ethernet / internal middleware bus</td><td>Authentication</td><td>A fabricated actuation-command topic from a compromised co-located process is accepted as legitimate by the planner or actuator interface.</td><td>[SYS-TS-07] Unauthenticated DDS/SOME-IP publish onto an internal actuation-command topic from a compromised co-located process.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">16</td><td class="risk">High</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Communication / SecOC</td></tr>
+<tr data-risk="Medium" class="medium"><td>Sensor fusion pipeline</td><td>Integrity</td><td>Desynchronized sensor fusion degrades obstacle-distance estimates, causing the planner to act on stale or misleading data.</td><td>[SYS-TS-08] Timing manipulation of one fusion input (e.g., delayed ultrasonic frame) to desynchronize sensor fusion and degrade obstacle-distance estimates.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">3</td><td class="rv">9</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (runtime/anomaly monitoring)</td></tr>
+<tr data-risk="High" class="high"><td>OTA update interface</td><td>Integrity</td><td>A malicious or downgraded firmware/perception-model package is installed and activated after reboot, altering parking-assist decision logic.</td><td>[SYS-TS-09] Malicious/downgraded SVS or Parking firmware or perception-model package delivered via OTA if signing/anti-rollback is not enforced for this subsystem&#39;s artifacts.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="5"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">5</td><td class="rv">20</td><td class="risk">High</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">OTA/FOTA/SOTA + Secure Reprogramming</td></tr>
+<tr data-risk="Medium" class="medium"><td>UDS diagnostics</td><td>Authorization</td><td>Attacker unlocks diagnostic routine-control services and directly invokes actuator test/calibration routines, bypassing the intended operating envelope.</td><td>[SYS-TS-10] Weak UDS SecurityAccess seed/key scheme allows an attacker with bus access to unlock diagnostic routine-control services and directly invoke actuator test/calibration routines.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="5"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="5"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">5</td><td class="rv">15</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Access (UDS SecurityAccess pattern)</td></tr>
+<tr data-risk="Low" class="low"><td>UDS diagnostics</td><td>Confidentiality</td><td>Calibration and perception-model parameters leak via diagnostics, exposing tuning/IP data and aiding further attacks.</td><td>[SYS-TS-11] Diagnostic read-data-by-identifier services exposed without adequate access control leak calibration/perception-model parameters.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalI">2</td><td class="rv">6</td><td class="risk">Low</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted" selected>accepted</option><option value="mitigated">mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Access (UDS SecurityAccess) + Secure Storage</td></tr>
+<tr data-risk="Medium" class="medium"><td>Actuator interfaces (EPS/brake)</td><td>Availability</td><td>The planner&#39;s actuation command is dropped or delayed during an active maneuver, leaving the vehicle without commanded steering/braking action.</td><td>[SYS-TS-12] Denial-of-service on the actuation command channel causes the planner&#39;s command to be dropped/delayed during an active maneuver.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (runtime/anomaly monitoring)</td></tr>
+<tr data-risk="Medium" class="medium"><td>SVS/Parking ECU compute (TDA4VM)</td><td>Integrity</td><td>Direct manipulation of ISP/perception/planner runtime state via an open debug port bypasses every higher-layer software control.</td><td>[SYS-TS-13] JTAG/debug port left open in a non-HS-SE lifecycle state allows direct manipulation of ISP/perception/planner runtime state.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="5"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="5"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalI">5</td><td class="rv">15</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure JTAG &amp; Debug Control + Secure Boot &amp; Runtime Integrity</td></tr>
+<tr data-risk="Low" class="low"><td>SVS/Parking ECU compute (TDA4VM)</td><td>Confidentiality</td><td>Stored perception-model weights or calibration secrets are extracted from ECU non-volatile storage, exposing IP and enabling model-specific adversarial attacks.</td><td>[SYS-TS-14] Extraction of stored perception-model weights or calibration secrets from ECU non-volatile storage if not encrypted at rest.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalI">1</td><td class="rv">3</td><td class="risk">Low</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted" selected>accepted</option><option value="mitigated">mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Storage</td></tr>
+<tr data-risk="Low" class="low"><td>In-vehicle CAN bus</td><td>Accountability</td><td>Rejected/attempted CAN injection attempts leave no forensic trail, preventing detection or reconstruction of an attack campaign.</td><td>[SYS-TS-15] Missing/incomplete security-event logging for rejected CAN frames prevents post-incident reconstruction of an attempted injection.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">1</td><td class="rv">3</td><td class="risk">Low</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted" selected>accepted</option><option value="mitigated">mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Logging</td></tr>
+<tr data-risk="Medium" class="medium"><td>Sensor fusion pipeline</td><td>Integrity</td><td>A single spoofed sensor (camera or ultrasonic) is trusted without corroboration, propagating a false environment model to the planner.</td><td>[SYS-TS-16] Cross-sensor plausibility check absent, so a single spoofed sensor input (camera or ultrasonic) is trusted without corroboration.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (runtime/anomaly monitoring)</td></tr>
+<tr data-risk="Medium" class="medium"><td>OTA update interface</td><td>Availability</td><td>An interrupted OTA flash leaves the SVS/Parking software partition non-functional, removing the parking-assist safety net until recovery.</td><td>[SYS-TS-17] OTA update process interrupted mid-flash for the SVS/Parking software partition leaves the subsystem non-functional (loss of parking-assist safety net) until recovery.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">OTA/FOTA/SOTA + Secure Reprogramming</td></tr>
+<tr data-risk="Medium" class="medium"><td>Automotive Ethernet switch / backbone</td><td>Availability</td><td>Broadcast storm or switch misconfiguration saturates the backbone, delaying camera-stream delivery to the fusion pipeline during an active maneuver.</td><td>[EXT-TS-01] Attacker connected to an exposed Ethernet debug/service port triggers a broadcast storm or VLAN hopping to flood the SVS backbone switch, starving time-sensitive camera streams.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">3</td><td class="rv">9</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (runtime/anomaly monitoring) + Secure Communication / SecOC</td></tr>
+<tr data-risk="High" class="high"><td>Automotive Ethernet switch / backbone</td><td>Integrity</td><td>Spoofed SOME-IP/DDS service-discovery entries redirect a fusion-topic subscriber to an attacker-controlled publisher, corrupting the fused environment model.</td><td>[EXT-TS-02] Attacker on the same Ethernet segment spoofs ARP/SOME-IP service-discovery entries to redirect a camera-stream or fusion-topic subscriber to an attacker-controlled publisher.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">16</td><td class="risk">High</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Communication / SecOC</td></tr>
+<tr data-risk="Medium" class="medium"><td>Radar sensors (corner/short-range)</td><td>Integrity</td><td>A false obstacle-distance report causes an unnecessary hard-braking event or a missed close-range obstacle during automated parking.</td><td>[EXT-TS-03] RF jamming or spoofed radar-chirp reflection causes false-negative or false-positive obstacle-distance readings from a corner radar module.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (sensor plausibility monitoring)</td></tr>
+<tr data-risk="Medium" class="medium"><td>Wheel speed sensors / odometry</td><td>Integrity</td><td>Corrupted odometry input biases the sensor-fusion vehicle-motion estimate, causing the parking planner to misjudge remaining distance to an obstacle.</td><td>[EXT-TS-04] Tampered or spoofed wheel-speed pulse train injected onto the sensor bus biases the odometry-based motion estimate used by the fusion pipeline.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">3</td><td class="rv">9</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (sensor plausibility monitoring)</td></tr>
+<tr data-risk="High" class="high"><td>Steering angle sensor</td><td>Integrity</td><td>False steering-angle feedback causes the automated-parking trajectory controller to command an incorrect steering correction, risking a curb strike or collision.</td><td>[EXT-TS-05] Compromised steering-angle sensor node reports a falsified angle value, bypassing plausibility cross-check against the EPS actuator command.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">16</td><td class="risk">High</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (sensor plausibility monitoring) + Secure Communication / SecOC</td></tr>
+<tr data-risk="Medium" class="medium"><td>EPS (steering-assist) ECU</td><td>Availability</td><td>Loss of steering-assist actuation mid-maneuver forces an aborted parking operation with the vehicle left in an unsafe position.</td><td>[EXT-TS-06] Denial-of-service against the EPS actuator ECU (bus flood or malformed-frame crash) drops steering-assist commands during an active automated-parking maneuver.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (runtime/anomaly monitoring)</td></tr>
+<tr data-risk="High" class="high"><td>Electric parking brake / hydraulic brake ECU</td><td>Integrity</td><td>A forged or replayed brake-hold-release command releases the electric parking brake unexpectedly on a slope during an automated parking sequence.</td><td>[EXT-TS-07] Forged or replayed electric-parking-brake release command injected onto the brake ECU&#39;s CAN segment absent freshness/authenticity checks.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="5"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">5</td><td class="rv">20</td><td class="risk">High</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Communication / SecOC</td></tr>
+<tr data-risk="Medium" class="medium"><td>HMI / infotainment top-view display</td><td>Integrity</td><td>A spoofed or frozen top-view guidance overlay shows a clear path when an obstacle is actually present, misleading the driver during a supervised parking maneuver.</td><td>[EXT-TS-08] Compromised infotainment process feeds a stale or manipulated top-view rendering to the HMI display without the fusion pipeline&#39;s current obstacle state.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (runtime/anomaly monitoring) + Secure Logging</td></tr>
+<tr data-risk="Medium" class="medium"><td>Remote Park Assist mobile app / BLE link</td><td>Authentication</td><td>An unauthorized party remotely triggers a parking maneuver from outside the vehicle, moving the vehicle without the owner&#39;s authorization.</td><td>[EXT-TS-09] Weak BLE pairing or a relay attack on the Remote Park Assist mobile-app link allows an attacker to replay or relay a start-parking-maneuver command from outside authorized range.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Access (UDS SecurityAccess pattern) + Secure Communication / SecOC</td></tr>
+<tr data-risk="Medium" class="medium"><td>Key fob / RKE remote-parking activation</td><td>Replay-resistance</td><td>A captured remote-parking activation signal is replayed later to move the vehicle without the driver present.</td><td>[EXT-TS-10] RF replay of a captured key-fob remote-parking-activation code, enabled by a static or short rolling-code window.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalI">3</td><td class="rv">9</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Communication / SecOC</td></tr>
+<tr data-risk="Medium" class="medium"><td>Camera calibration data store (intrinsic/extrinsic)</td><td>Integrity</td><td>Tampered camera calibration parameters silently distort the stitched surround-view image, causing the perception pipeline to misjudge object distance.</td><td>[EXT-TS-11] Unauthorized modification of stored camera intrinsic/extrinsic calibration parameters in ECU non-volatile storage skews the surround-view stitching geometry.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Storage + RTMD (sensor plausibility monitoring)</td></tr>
+<tr data-risk="High" class="high"><td>Perception ML model storage (NVM)</td><td>Integrity</td><td>A tampered perception-model weights file installed outside the OTA-signed update path degrades obstacle-detection accuracy without detection.</td><td>[EXT-TS-12] Direct (non-OTA) modification of the on-ECU perception-model weight file via a debug or file-system access path bypasses the OTA signature-verification gate.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">16</td><td class="risk">High</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Storage + Secure Boot &amp; Runtime Integrity</td></tr>
+<tr data-risk="Medium" class="medium"><td>Time synchronization service (gPTP/PTP)</td><td>Integrity</td><td>A manipulated time-sync reference desynchronizes camera, radar, and ultrasonic timestamps, causing the fusion pipeline to misalign inputs and misjudge the obstacle position.</td><td>[EXT-TS-13] Rogue or spoofed gPTP grandmaster on the Ethernet backbone shifts the shared time reference, desynchronizing sensor timestamps feeding the fusion pipeline.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">3</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">RTMD (runtime/anomaly monitoring) + Secure Communication / SecOC</td></tr>
+<tr data-risk="Medium" class="medium"><td>OBD-II / diagnostic physical connector</td><td>Authorization</td><td>Physical access to the exposed diagnostic connector allows an attacker to reach the UDS/CAN backbone without going through the intended gateway access-control path.</td><td>[EXT-TS-14] Unrestricted physical access to the OBD-II connector allows direct CAN-bus injection or UDS session initiation, bypassing intended gateway-level network segmentation.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td class="totalI">3</td><td class="rv">12</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Access (UDS SecurityAccess pattern) + Secure JTAG &amp; Debug Control</td></tr>
+<tr data-risk="High" class="high"><td>Software/firmware update package repository (backend)</td><td>Integrity</td><td>A tampered SVS/Parking firmware package published upstream of the OTA delivery path is signed and distributed to the entire fleet before detection.</td><td>[EXT-TS-15] Compromise of the backend build/signing pipeline or artifact repository allows a malicious SVS/Parking firmware package to be published as a legitimate signed release.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalL">4</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td class="totalI">4</td><td class="rv">16</td><td class="risk">High</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">OTA/FOTA/SOTA + Secure Reprogramming</td></tr>
+<tr data-risk="Medium" class="medium"><td>Cloud parking-assist backend / fleet telemetry</td><td>Confidentiality</td><td>Exfiltrated fleet-wide parking-maneuver telemetry (routes, camera snapshots, timestamps) exposes driver location and behavior patterns.</td><td>[EXT-TS-16] Weak backend access control on the fleet telemetry store allows bulk exfiltration of parking-event logs and associated camera snapshots.</td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="2"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="l" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td class="totalL">3</td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="3"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="1"></td><td><input class="i" oninput="calcRow(this.parentElement.parentElement)" value="4"></td><td class="totalI">3</td><td class="rv">9</td><td class="risk">Medium</td><td class="riskAssessment"><select class="riskAssessmentSelect" onchange="saveDashboardState();"><option value="accepted">accepted</option><option value="mitigated" selected>mitigated</option><option value="transfered">transfered</option><option value="avoid">avoid</option></select></td><td class="securityGoal"></td><td class="cyberConcept">Secure Storage + Secure Access (UDS SecurityAccess pattern)</td></tr>
+</tbody>
+</table>
+
+</body></html>
