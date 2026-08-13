@@ -41,30 +41,6 @@ graph LR
     SWR --> HSI
 ```
 
-## Site structure: per-ECU
-
-| Folder | ECU | Status |
-|---|---|---|
-| [`Parking/`](Parking/) | ADAS Parking Assist / Surround View System (SVS) | All 9 requirements docs + vulnerability analysis + TARA dashboard |
-| [`SDV/`](SDV/) | Software Defined Vehicle platform | TBD |
-
-## Topics (Parking ECU)
-
-| Document | Topic |
-|---|---|
-| [Parking/TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md](Parking/TDA4VM_Secure_Authentic_Boot_Runtime_Integrity_Requirements.md) | Secure/authentic boot and runtime integrity |
-| [Parking/TDA4VM_Secure_JTAG_Requirements.md](Parking/TDA4VM_Secure_JTAG_Requirements.md) | JTAG/debug port access control |
-| [Parking/TDA4VM_SecureAccess_Requirements.md](Parking/TDA4VM_SecureAccess_Requirements.md) | UDS SecurityAccess (diagnostic access control) |
-| [Parking/TDA4VM_SecOC_Requirements.md](Parking/TDA4VM_SecOC_Requirements.md) | Secure communication: AUTOSAR SecOC per-PDU authenticity/freshness, confidentiality channels, off-board TLS |
-| [Parking/TDA4VM_Secure_Logging_Requirements.md](Parking/TDA4VM_Secure_Logging_Requirements.md) | Secure/tamper-evident logging |
-| [Parking/TDA4VM_OTA_FOTA_SOTA_Requirements.md](Parking/TDA4VM_OTA_FOTA_SOTA_Requirements.md) | OTA/FOTA/SOTA update delivery |
-| [Parking/TDA4VM_Secure_Reprogramming_Requirements.md](Parking/TDA4VM_Secure_Reprogramming_Requirements.md) | Secure ECU reprogramming |
-| [Parking/TDA4VM_RTMD_Requirements.md](Parking/TDA4VM_RTMD_Requirements.md) | Runtime tamper monitoring and detection |
-| [Parking/TDA4VM_Secure_Storage_Requirements.md](Parking/TDA4VM_Secure_Storage_Requirements.md) | Secure storage of keys/credentials at rest |
-| [Parking/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.md](Parking/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.md) | ISO 21434 continuous vulnerability monitoring/analysis/management (process doc) |
-| [Parking/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.md](Parking/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.md) | Point-in-time SVS/Parking Assist vulnerability analysis report + evidence appendices |
-| [`Parking/TARA/Ref/`](Parking/TARA/Ref/) | TARA dashboard |
-
 ## Offline single-file export
 
 Every push to `main` builds a single self-contained HTML file - all docs and diagrams
