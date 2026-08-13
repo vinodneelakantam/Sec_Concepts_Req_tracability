@@ -16,7 +16,7 @@ AUTOSAR SecOC).
 Each document follows the same flow: **FSC (→FSR) → System Requirements + System Static
 Architecture → TSC (→TSR) → Hardware Requirements + Hardware Static Architecture → Software
 Requirements + Software Static & Dynamic Architecture → HSI**, using a consistent
-CSR/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
+CSG/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI requirement ID taxonomy.
 
 ## Topics
 
@@ -38,13 +38,13 @@ These two documents are deliberately kept separate and live together under `Vuln
 
 | Document | What it is |
 |---|---|
-| [Vulnerability Management Process]({{ "/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.html" | relative_url }}) | **Requirements doc.** Defines the ongoing ISO 21434 continuous-cybersecurity-activity capability (SBOM/CVE monitoring, TARA re-assessment, risk-treatment routing) using this repo's CSR/FSR/SYSR/TSC/TSR taxonomy. Says a capability must exist - contains no analysis of a specific subsystem. |
+| [Vulnerability Management Process]({{ "/Vulnerability_Analysis/TDA4VM_Vulnerability_Analysis_Requirements.html" | relative_url }}) | **Requirements doc.** Defines the ongoing ISO 21434 continuous-cybersecurity-activity capability (SBOM/CVE monitoring, TARA re-assessment, risk-treatment routing) using this repo's CSG/FSR/SYSR/TSC/TSR taxonomy. Says a capability must exist - contains no analysis of a specific subsystem. |
 | [SVS / Parking Assist Vulnerability Analysis Report]({{ "/Vulnerability_Analysis/SVS_ParkingAssist_Vulnerability_Analysis_Report.html" | relative_url }}) | **Point-in-time report.** One concrete engagement deliverable produced *by* that process for the SVS/Parking Assist subsystem: attack surfaces, STRIDE, CVSS-scored risk matrix, case-study narratives, and evidence appendices (CAN/UDS logs, pen-test findings, static/dynamic/fuzz results). |
 
 ## Requirement ID taxonomy
 
-- **CSR** - Cybersecurity Requirement (what must be true)
-- **FSC** - Functional Security Concept (the overarching strategy for realizing the CSRs)
+- **CSG** - Cybersecurity Goal (what must be true)
+- **FSC** - Functional Security Concept (the overarching strategy for realizing the CSGs)
 - **FSR** - Functional Security Requirements (decomposed, testable, still implementation-agnostic)
 - **SYSR** - System Requirement (system-level allocation across entities/trust boundaries)
 - **TSC** - Technical Security Concept (how, at a functional level)

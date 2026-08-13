@@ -46,7 +46,7 @@ When the user asks for “all topics,” generate 20-question expert Q&A sets fo
      another vehicle?" (pairs well with the iso21434-tara-grounding skill for the "why" framing).
 3. **Answer format**: answer in an expert-level, engineering style rather than a one-liner. Each answer
    must explain the mechanism, the security rationale, the failure mode, and the evidence. Include a
-   short traceability line at the end with the relevant CSR/TSC/TSR/HWR/SWR/HSI IDs and TI mechanism
+   short traceability line at the end with the relevant CSG/TSC/TSR/HWR/SWR/HSI IDs and TI mechanism
    names so the answer is verifiable against the source doc instead of sounding generic.
 4. **If a question would require a fact not present in the domain skill or the target doc**, say so
    explicitly rather than guessing, and offer to fetch the relevant TI page first (see the domain
@@ -101,7 +101,7 @@ When the user wants a full interview set, produce the response in this exact pat
 
 | # | Question | Difficulty | Detailed answer | Evidence |
 |---|---|---|---|---|
-| 1 | ... | L1 | ...4-8 sentence engineering explanation... | ...CSR/TSC/TSR/HWR/SWR/HSI IDs + TI mechanism... |
+| 1 | ... | L1 | ...4-8 sentence engineering explanation... | ...CSG/TSC/TSR/HWR/SWR/HSI IDs + TI mechanism... |
 | 2 | ... | L2 | ...design and failure-mode explanation... | ... |
 | 3 | ... | L3 | ...tradeoff analysis and residual risk... | ... |
 | 20 | ... | Scenario | ...real-world attack path and mitigation logic... | ... |

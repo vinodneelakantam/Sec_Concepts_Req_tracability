@@ -8,12 +8,12 @@ nav_title: Secure Logging
 
 ## 1. Functional Security Concept
 
-### 1.1 Cybersecurity Requirements (CSR)
-- CSR-LOG-1: Security-relevant events shall be logged with integrity protection.
-- CSR-LOG-2: Retention/rotation shall preserve high-criticality events and prevent silent loss.
-- CSR-LOG-3: Sensitive data fields shall be minimized or protected according to privacy policy.
-- CSR-LOG-4: Time/counter context shall support event sequencing and cross-source correlation.
-- CSR-LOG-5: Exported logs shall maintain provenance and integrity metadata.
+### 1.1 Cybersecurity Goals (CSG)
+- CSG-LOG-1: Security-relevant events shall be logged with integrity protection.
+- CSG-LOG-2: Retention/rotation shall preserve high-criticality events and prevent silent loss.
+- CSG-LOG-3: Sensitive data fields shall be minimized or protected according to privacy policy.
+- CSG-LOG-4: Time/counter context shall support event sequencing and cross-source correlation.
+- CSG-LOG-5: Exported logs shall maintain provenance and integrity metadata.
 
 ### 1.2 Functional Security Concept (FSC)
 - FSC-LOG-1: Make tampering with recorded security events detectable rather than merely difficult.
@@ -167,11 +167,11 @@ sequenceDiagram
 
 
 ### 5.4 Behavioral requirement focus
-- Every record is chained to the previous one via an SA2UL-generated HMAC, so a gap or edit breaks the chain and is independently detectable by the backend, not just the local device (CSR-LOG-1, TSC-LOG-1)
+- Every record is chained to the previous one via an SA2UL-generated HMAC, so a gap or edit breaks the chain and is independently detectable by the backend, not just the local device (CSG-LOG-1, TSC-LOG-1)
 - Writes are crash-consistent (write-ahead/double-buffer) so a power loss mid-write cannot corrupt or silently truncate the chain (TSR-LOG-2)
-- Retention pressure evicts oldest/lowest-severity records first; records flagged as critical/security-relevant are never silently evicted (CSR-LOG-2, SWR-LOG-3)
+- Retention pressure evicts oldest/lowest-severity records first; records flagged as critical/security-relevant are never silently evicted (CSG-LOG-2, SWR-LOG-3)
 - If integrity-tag generation itself fails, the event is still persisted with a degraded-integrity flag rather than dropped, preserving TSC-LOG-4's fail-safe (not fail-silent) requirement
-- Export carries a chain-continuity marker so the backend can detect and flag gaps (evidence loss or tampering in transit/at rest), and privacy redaction is applied before the batch leaves the ECU boundary (CSR-LOG-5, TSR-LOG-4)
+- Export carries a chain-continuity marker so the backend can detect and flag gaps (evidence loss or tampering in transit/at rest), and privacy redaction is applied before the batch leaves the ECU boundary (CSG-LOG-5, TSR-LOG-4)
 
 ## 6. Hardware-Software Interface (HSI)
 

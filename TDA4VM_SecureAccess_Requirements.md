@@ -8,12 +8,12 @@ nav_title: Secure Access
 
 ## 1. Functional Security Concept
 
-### 1.1 Cybersecurity Requirements (CSR)
-- CSR-SA-1: Protected services shall require successful security access before execution.
-- CSR-SA-2: Challenge-response shall include freshness/nonce and anti-replay protection.
-- CSR-SA-3: Failed attempts shall trigger lockout/backoff and audit logging.
-- CSR-SA-4: Access rights shall be role/session specific.
-- CSR-SA-5: Elevated access shall expire automatically and require re-authentication.
+### 1.1 Cybersecurity Goals (CSG)
+- CSG-SA-1: Protected services shall require successful security access before execution.
+- CSG-SA-2: Challenge-response shall include freshness/nonce and anti-replay protection.
+- CSG-SA-3: Failed attempts shall trigger lockout/backoff and audit logging.
+- CSG-SA-4: Access rights shall be role/session specific.
+- CSG-SA-5: Elevated access shall expire automatically and require re-authentication.
 
 ### 1.2 Functional Security Concept (FSC)
 - FSC-SA-1: Require successful, freshness-protected authentication before granting access to any protected diagnostic service.
@@ -172,10 +172,10 @@ sequenceDiagram
 
 
 ### 5.4 Behavioral requirement focus
-- Access is deny-by-default: no protected service gate opens until a `sendKey` verification succeeds for the matching session and level (CSR-SA-1, TSC-SA-2)
-- Seeds are single-use, TRNG-generated, and bound to the current session and requested level, preventing replay of a previously observed seed/key pair (CSR-SA-2)
-- Failure handling follows ISO 14229-1 NRCs explicitly: 0x35 invalidKey, 0x36 exceedNumberOfAttempts, 0x37 requiredTimeDelayNotExpired drive the retry/backoff state machine rather than a generic "deny" (CSR-SA-3)
-- Granted access is automatically revoked on S3 timer expiry, ECU reset, or session downgrade to default session - there is no persistent unlock across power cycles (CSR-SA-5, SWR-SA-2)
+- Access is deny-by-default: no protected service gate opens until a `sendKey` verification succeeds for the matching session and level (CSG-SA-1, TSC-SA-2)
+- Seeds are single-use, TRNG-generated, and bound to the current session and requested level, preventing replay of a previously observed seed/key pair (CSG-SA-2)
+- Failure handling follows ISO 14229-1 NRCs explicitly: 0x35 invalidKey, 0x36 exceedNumberOfAttempts, 0x37 requiredTimeDelayNotExpired drive the retry/backoff state machine rather than a generic "deny" (CSG-SA-3)
+- Granted access is automatically revoked on S3 timer expiry, ECU reset, or session downgrade to default session - there is no persistent unlock across power cycles (CSG-SA-5, SWR-SA-2)
 - The shared secret/key derivation material never leaves protected key storage in plaintext; only the computed key/seed values cross the tester interface (TSR-SA-2)
 
 ## 6. Hardware-Software Interface (HSI)

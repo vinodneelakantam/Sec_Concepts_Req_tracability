@@ -17,7 +17,8 @@ Each `TDA4VM_*_Requirements.md` file covers one security concept end-to-end, fol
 Requirements + Hardware Static Architecture → Software Requirements + Software Static & Dynamic
 Architecture → HSI**, structured as six sections:
 
-1. **Functional Security Concept** - the CSR, the overarching FSC strategy, and the decomposed FSR.
+1. **Functional Security Concept** - the CSG (cybersecurity goal), the overarching FSC strategy
+   realizing it, and the decomposed FSR.
 2. **System Requirements and System Static Architecture** - entities, trust boundaries, a Mermaid
    diagram, and the system-level requirement allocation (`SYSR-*`).
 3. **Technical Security Concept** - the TSC (how, functionally) and TSR (how, at a concrete TI
@@ -31,8 +32,8 @@ Architecture → HSI**, structured as six sections:
 
 Requirements are layered per topic using a consistent ID taxonomy:
 
-- **CSR** - Cybersecurity Requirement (what must be true)
-- **FSC** - Functional Security Concept (the overarching strategy for realizing the CSRs)
+- **CSG** - Cybersecurity Goal (what must be true)
+- **FSC** - Functional Security Concept (the overarching strategy for realizing the CSGs)
 - **FSR** - Functional Security Requirements (decomposed, testable, still implementation-agnostic)
 - **SYSR** - System Requirement (system-level allocation across entities/trust boundaries)
 - **TSC** - Technical Security Concept (how, at a functional level)
@@ -98,9 +99,9 @@ domain knowledge and workflows used to write and maintain these documents:
   taxonomy, doc structure convention, and Mermaid authoring/validation rules.
 - `requirements-doc-scaffolding` - procedure for adding a brand-new topic document.
 - `requirements-review` - audit checklist for structure, ID taxonomy, and grounding quality.
-- `traceability-matrix` - builds a cross-document CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI
+- `traceability-matrix` - builds a cross-document CSG/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI
   traceability matrix.
-- `iso21434-tara-grounding` - ISO 21434 TARA vocabulary to justify why a given CSR exists.
+- `iso21434-tara-grounding` - ISO 21434 TARA vocabulary to justify why a given CSG exists.
 - `interview-qa-generator` - generates practice interview Q&A grounded in these documents.
 
 ## Intended use

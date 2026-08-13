@@ -1,6 +1,6 @@
 ---
 name: traceability-matrix
-description: 'Generate or refresh a cross-document requirement traceability matrix for the TDA4VM ADAS ECU cybersecurity requirements repo, mapping CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI IDs across all TDA4VM_*_Requirements.md files and flagging orphaned or undeclared requirement IDs. Use when the user asks for a traceability matrix, RTM, requirement coverage table, or "how do requirements map across documents".'
+description: 'Generate or refresh a cross-document requirement traceability matrix for the TDA4VM ADAS ECU cybersecurity requirements repo, mapping CSG/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI IDs across all TDA4VM_*_Requirements.md files and flagging orphaned or undeclared requirement IDs. Use when the user asks for a traceability matrix, RTM, requirement coverage table, or "how do requirements map across documents".'
 ---
 
 # Cross-Document Traceability Matrix (TDA4VM ADAS ECU)
@@ -16,17 +16,17 @@ inference when presenting the matrix — it is not a formally-linked RTM.
 1. **Extract every requirement ID and its text** from each `TDA4VM_*_Requirements.md` (note:
    `TDA4VM_Vulnerability_Analysis_Requirements.md` lives under `Vulnerability_Analysis/`, not the repo root):
    ```bash
-   grep -n -E '^- (CSR|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-' TDA4VM_*_Requirements.md Vulnerability_Analysis/TDA4VM_*_Requirements.md
+   grep -n -E '^- (CSG|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-' TDA4VM_*_Requirements.md Vulnerability_Analysis/TDA4VM_*_Requirements.md
    ```
 2. **Build the per-document summary table**:
 
-   | Doc | Topic suffix | CSR count | FSC count | FSR count | SYSR count | TSC count | TSR count | HWR count | SWR count | HSI count |
+   | Doc | Topic suffix | CSG count | FSC count | FSR count | SYSR count | TSC count | TSR count | HWR count | SWR count | HSI count |
    |---|---|---|---|---|---|---|---|---|---|---|
 
-3. **Build the ID-level matrix** per document, one row per CSR, showing which SYSR/TSC/TSR/HWR/SWR/HSI
+3. **Build the ID-level matrix** per document, one row per CSG, showing which SYSR/TSC/TSR/HWR/SWR/HSI
    IDs were cited alongside it in `5.4` (this is the closest thing this repo has to a "supports" link):
 
-   | CSR ID | CSR text (short) | Cited with (SYSR/TSC/TSR/HWR/SWR/HSI IDs from 5.4) | Cited in 5.4? |
+   | CSG ID | CSG text (short) | Cited with (SYSR/TSC/TSR/HWR/SWR/HSI IDs from 5.4) | Cited in 5.4? |
    |---|---|---|---|
 
 4. **Flag orphans and typos**:
@@ -46,8 +46,8 @@ inference when presenting the matrix — it is not a formally-linked RTM.
    skill's bookkeeping step and the requirements-review skill's collision check).
 
 ## Interpreting results
-- A high "declared-but-never-cited" count in one doc is not necessarily wrong — some CSRs are purely
+- A high "declared-but-never-cited" count in one doc is not necessarily wrong — some CSGs are purely
   architectural (e.g., a hardware constraint) and may not need a dynamic-view citation. Use judgment,
   don't auto-flag as a defect without checking whether Section 4.2 realistically could reference it.
-- A CSR with zero supporting SYSR/TSC/TSR anywhere in the same file's Sections 2.3/3 is a stronger
-  signal of a real gap — every CSR should have at least one SYSR/TSC/TSR path realizing it.
+- A CSG with zero supporting SYSR/TSC/TSR anywhere in the same file's Sections 2.3/3 is a stronger
+  signal of a real gap — every CSG should have at least one SYSR/TSC/TSR path realizing it.

@@ -1,6 +1,6 @@
 ---
 name: automotive-cybersecurity-requirements
-description: 'Automotive cybersecurity requirements engineering for a TDA4VM (TI Jacinto 7 / J721E) ADAS ECU: secure boot, JTAG/debug, secure access (UDS SecurityAccess), secure communication (SecOC), secure logging, OTA/FOTA/SOTA, secure reprogramming, and runtime tamper monitoring. Use when writing, reviewing, or extending CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI requirement documents in this repo, grounding technical claims in real TI TDA4VM/TISCI facts instead of generic assumptions, drawing on ISO 21434 / ISO 14229 / AUTOSAR SecOC concepts, or authoring/validating Mermaid architecture and sequence diagrams for these documents.'
+description: 'Automotive cybersecurity requirements engineering for a TDA4VM (TI Jacinto 7 / J721E) ADAS ECU: secure boot, JTAG/debug, secure access (UDS SecurityAccess), secure communication (SecOC), secure logging, OTA/FOTA/SOTA, secure reprogramming, and runtime tamper monitoring. Use when writing, reviewing, or extending CSG/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI requirement documents in this repo, grounding technical claims in real TI TDA4VM/TISCI facts instead of generic assumptions, drawing on ISO 21434 / ISO 14229 / AUTOSAR SecOC concepts, or authoring/validating Mermaid architecture and sequence diagrams for these documents.'
 ---
 
 # Automotive Cybersecurity Requirements (TDA4VM ADAS ECU)
@@ -23,7 +23,7 @@ plausible-sounding invented one.
 | `TDA4VM_Secure_Reprogramming_Requirements.md` | UDS-based flashing/reprogramming |
 | `TDA4VM_RTMD_Requirements.md` | Runtime Tamper Monitoring and Detection |
 | `TDA4VM_Secure_Storage_Requirements.md` | Secure storage of keys/credentials/secrets at rest (KEK/DKEK, keyring, extended OTP) |
-| `TDA4VM_Vulnerability_Analysis_Requirements.md` | ISO 21434 continuous vulnerability monitoring/analysis/management, cross-linked to the other docs' CSR/TSR IDs (process-oriented, template deliberately adapted — see the doc's scope note) |
+| `TDA4VM_Vulnerability_Analysis_Requirements.md` | ISO 21434 continuous vulnerability monitoring/analysis/management, cross-linked to the other docs' CSG/TSR IDs (process-oriented, template deliberately adapted — see the doc's scope note) |
 
 ## Document structure convention (every file follows this exactly)
 
@@ -33,7 +33,7 @@ Software Requirements + Software Static & Dynamic Architecture → HSI**.
 
 ```
 ## 1. Functional Security Concept
-### 1.1 Cybersecurity Requirements (CSR)        <- full requirement text, NOT bare "ID-1 to ID-5" ranges
+### 1.1 Cybersecurity Goals (CSG)        <- full requirement text, NOT bare "ID-1 to ID-5" ranges
 ### 1.2 Functional Security Concept (FSC)
 ### 1.3 Functional Security Requirements (FSR)
 ## 2. System Requirements and System Static Architecture
@@ -56,8 +56,9 @@ Software Requirements + Software Static & Dynamic Architecture → HSI**.
 ### 6.2 HSI Requirements (HSI)
 ```
 
-Requirement ID taxonomy used consistently: **CSR** (Cybersecurity Requirement, item-level) →
-**FSC** (Functional Security Concept, the overarching strategy for realizing the CSRs) →
+Requirement ID taxonomy used consistently: **CSG** (Cybersecurity Goal, item-level — derived from
+TARA risk-treatment decisions, ISO 21434 concept-phase vocabulary) →
+**FSC** (Functional Security Concept, the overarching strategy for realizing the CSGs) →
 **FSR** (Functional Security Requirements, decomposed testable functional requirements, still
 implementation-agnostic) → **SYSR** (System Requirement, system-level allocation across the
 entities/trust boundaries in Section 2) → **TSC** (Technical Security Concept — renamed from the
@@ -65,14 +66,14 @@ older FCR/"Functional Cybersecurity Concept" label) → **TSR** (Technical Secur
 TDA4VM-specific — renamed from the older TCR/"Technical Cybersecurity Concept" label) → **HWR**
 (Hardware Requirement) / **SWR** (Software Requirement) → **HSI** (Hardware-Software Interface
 Requirement, register/API/message-level contract between the hardware in Section 4 and the
-software in Section 5). Each file uses a topic suffix, e.g. `CSR-SA-1` (Secure Access), `CSR-JTAG-1`,
-`CSR-OTA-1`, `CSR-SRP-1` (reprogramming), `CSR-RTMD-1`, `CSR-LOG-1`, `CSR-STO-1`
-(secure storage), `CSR-SECOC-1` (secure communication, incl. AUTOSAR SecOC per-PDU
+software in Section 5). Each file uses a topic suffix, e.g. `CSG-SA-1` (Secure Access), `CSG-JTAG-1`,
+`CSG-OTA-1`, `CSG-SRP-1` (reprogramming), `CSG-RTMD-1`, `CSG-LOG-1`, `CSG-STO-1`
+(secure storage), `CSG-SECOC-1` (secure communication, incl. AUTOSAR SecOC per-PDU
 authenticity/freshness plus confidentiality/off-board channels),
-`CSR-VULN-1` (vulnerability analysis/management), with matching
+`CSG-VULN-1` (vulnerability analysis/management), with matching
 `FSC-<suffix>-n`/`FSR-<suffix>-n`/`SYSR-<suffix>-n`/
 `TSC-<suffix>-n`/`TSR-<suffix>-n`/`HSI-<suffix>-n` IDs, and the boot doc uses bare
-`CSR-1`/`FSC-1`/`FSR-1`/`SYSR-1`/`TSC-1`/`TSR-1`/`HSI-1`.
+`CSG-1`/`FSC-1`/`FSR-1`/`SYSR-1`/`TSC-1`/`TSR-1`/`HSI-1`.
 
 **Note on `TDA4VM_SecOC_Requirements.md`**: this doc was originally split from a separate
 `TDA4VM_Secure_Communication_Requirements.md`, then merged back into one file (all under the
@@ -86,12 +87,12 @@ oriented rather than mechanism-oriented (an ISO 21434 continuous cybersecurity a
 ECU runtime security stack). Its own "Hardware elements" (4.1) are the asset/fingerprinting surface
 it analyzes (`TISCI_MSG_GET_SOC_UID`, eFuse SWREV/KEYREV, the full HW inventory from the other
 docs), not a new crypto engine, and its Section 5 tooling produces risk-treatment decisions that
-cite CSR/TSR IDs in the other docs rather than defining a new always-running security control.
+cite CSG/TSR IDs in the other docs rather than defining a new always-running security control.
 Still follow the same 6-section shape and ID taxonomy — don't skip sections just because the topic
 is process-oriented.
 
 **Rule:** Sections 1.1-1.3 must always spell out full requirement text under their own subheadings
-— never collapse to an ID range like "CSR-SA-1 to CSR-SA-5". Section 2.3 (SYSR) and Section 6.2
+— never collapse to an ID range like "CSG-SA-1 to CSG-SA-5". Section 2.3 (SYSR) and Section 6.2
 (HSI) are new content, not renamed from an earlier taxonomy — write them fresh per topic, grounded
 in that doc's own Section 2 entities/boundaries (for SYSR) and Section 4/5 hardware+software blocks
 (for HSI), never invented boilerplate.
@@ -202,8 +203,8 @@ the system-entity/trust-boundary view in 2.2 and the software-module view in 5.1
   Key/Session Manager, NvM/register-backed freshness counter surviving reset) — that same doc also
   covers confidentiality-protected channels (SA2UL AES-GCM) and off-board TLS/mTLS sessions, since
   splitting those into a separate file left too little unique content to justify two docs.
-- **ISO 21434**: source of the CSR/FSC-FSR/TSC-TSR concept-layer vocabulary (item-level
-  cybersecurity requirement → functional concept → technical concept).
+- **ISO 21434**: source of the CSG/FSC-FSR/TSC-TSR concept-layer vocabulary (item-level
+  cybersecurity goal → functional concept → technical concept).
 - Dual-bank (A/B) flash pattern for OTA/reprogramming: candidate writes only ever touch the inactive
   bank; activation re-enters the full DMSC BootROM chain and reverts to the last known-good bank on
   verification failure.
@@ -283,7 +284,7 @@ from memory. All links below were confirmed reachable.
 **Non-TI standards referenced for realism** (verify current edition/scope before quoting specifics)
 - ISO 14229-1 (UDS) — SecurityAccess `0x27`, RequestDownload/TransferData/RequestTransferExit
   `0x34/0x36/0x37`, RoutineControl `0x31`, ECUReset `0x11`, NRCs `0x35/0x36/0x37`.
-- ISO 21434 — cybersecurity engineering lifecycle; source of the CSR/FSC-FSR/TSC-TSR concept-layer split.
+- ISO 21434 — cybersecurity engineering lifecycle; source of the CSG/FSC-FSR/TSC-TSR concept-layer split.
 - AUTOSAR SecOC (Secure Onboard Communication) specification — freshness value + MAC framing.
 - ISO 24089 — software update engineering (OTA/campaign concepts referenced loosely, not quoted).
 

@@ -18,7 +18,7 @@ TSC (→TSR) → Hardware Requirements + Hardware Static Architecture → Softwa
 Software Static & Dynamic Architecture → HSI**:
 ```
 ## 1. Functional Security Concept
-### 1.1 Cybersecurity Requirements (CSR)
+### 1.1 Cybersecurity Goals (CSG)
 ### 1.2 Functional Security Concept (FSC)
 ### 1.3 Functional Security Requirements (FSR)
 ## 2. System Requirements and System Static Architecture
@@ -44,23 +44,23 @@ Flag: missing sections, sections out of order, or a `2.2`/`4.1`/`5.1`/`5.3` miss
 
 ### 2. No bare ID ranges (hard rule)
 Search each file's Sections 1.1-1.3, 2.3, 3.1-3.2, 4.2, 5.2, 6.2 for a bare range pattern instead of
-spelled-out text, e.g. `CSR-XXX-1 to CSR-XXX-5` or `CSR-XXX-1..5`. This is an automatic fail — every
-CSR/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI must be its own full sentence under its subheading.
+spelled-out text, e.g. `CSG-XXX-1 to CSG-XXX-5` or `CSG-XXX-1..5`. This is an automatic fail — every
+CSG/FSC/FSR/SYSR/TSC/TSR/HWR/SWR/HSI must be its own full sentence under its subheading.
 
 ### 3. ID taxonomy consistency within a file
-- Every doc should define at least one `CSR-*`, `FSC-*`, `FSR-*` (Section 1), `SYSR-*` (2.3),
+- Every doc should define at least one `CSG-*`, `FSC-*`, `FSR-*` (Section 1), `SYSR-*` (2.3),
   `TSC-*`, `TSR-*` (Section 3), `HWR-*` (4.2), `SWR-*` (5.2), and `HSI-*` (6.2) — flag any doc
   missing one of these nine categories entirely.
-- IDs within a file must use one consistent topic suffix (e.g., all `CSR-STO-*`, not a mix of
-  `CSR-STO-*` and `CSR-STOR-*`).
+- IDs within a file must use one consistent topic suffix (e.g., all `CSG-STO-*`, not a mix of
+  `CSG-STO-*` and `CSG-STOR-*`).
 - ID numbers should be contiguous/sequential within a category, starting at 1, with no gaps or
   duplicates inside the same file.
 
 ### 4. Cross-document ID collisions
 Extract every requirement ID across all files and check for accidental collisions (two different
-docs both claiming `CSR-STO-1`, for instance, other than the intentionally bare-suffix boot doc):
+docs both claiming `CSG-STO-1`, for instance, other than the intentionally bare-suffix boot doc):
 ```bash
-grep -n -oE '(CSR|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-[A-Z]*-?[0-9]+' TDA4VM_*_Requirements.md Vulnerability_Analysis/TDA4VM_*_Requirements.md | sort -t: -k2
+grep -n -oE '(CSG|FSC|FSR|SYSR|TSC|TSR|HWR|SWR|HSI)-[A-Z]*-?[0-9]+' TDA4VM_*_Requirements.md Vulnerability_Analysis/TDA4VM_*_Requirements.md | sort -t: -k2
 ```
 Any ID string appearing under two different topic suffixes with the same file scope is a bug.
 

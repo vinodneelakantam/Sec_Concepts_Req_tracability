@@ -1,6 +1,6 @@
 ---
 name: requirements-doc-scaffolding
-description: 'Scaffold a brand-new TDA4VM ADAS ECU cybersecurity requirements topic document (like TDA4VM_Secure_Storage_Requirements.md) end-to-end: pick a topic and unique ID suffix, fetch/verify grounding facts from TI TISCI docs, author all 6 structural sections with full CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI requirement text, author and validate Mermaid diagrams, then update repo bookkeeping. Use when the user says things like "introduce a new security concept", "add a new requirements doc/topic", or "we need requirements for X" in this repo.'
+description: 'Scaffold a brand-new TDA4VM ADAS ECU cybersecurity requirements topic document (like TDA4VM_Secure_Storage_Requirements.md) end-to-end: pick a topic and unique ID suffix, fetch/verify grounding facts from TI TISCI docs, author all 6 structural sections with full CSG/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI requirement text, author and validate Mermaid diagrams, then update repo bookkeeping. Use when the user says things like "introduce a new security concept", "add a new requirements doc/topic", or "we need requirements for X" in this repo.'
 ---
 
 # Requirements Doc Scaffolding (TDA4VM ADAS ECU)
@@ -25,7 +25,7 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
    structure from the domain skill (the flow: FSC(→FSR) → System Requirements + System Static
    Architecture → TSC(→TSR) → Hardware Requirements + Hardware Static Architecture → Software
    Requirements + Software Static & Dynamic Architecture → HSI):
-   - `## 1. Functional Security Concept` → `1.1` CSR, `1.2` FSC, `1.3` FSR full requirement text
+   - `## 1. Functional Security Concept` → `1.1` CSG, `1.2` FSC, `1.3` FSR full requirement text
      (never bare ID ranges)
    - `## 2. System Requirements and System Static Architecture` → `2.1` entities, `2.2` trust
      boundaries + `graph LR` mermaid, `2.3` SYSR requirements (new content, not renamed from an
@@ -35,11 +35,11 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
      hardware static architecture mermaid diagram, `4.2` HWR mapping
    - `## 5. Software Requirements and Software Static & Dynamic Architecture` → `5.1` blocks +
      `graph LR` mermaid, `5.2` SWR mapping, `5.3` `sequenceDiagram` with explicit `alt`/`opt` failure
-     branches, `5.4` behavioral bullets each citing at least one CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR ID
+     branches, `5.4` behavioral bullets each citing at least one CSG/FSC/FSR/SYSR/TSC/TSR/SWR/HWR ID
    - `## 6. Hardware-Software Interface (HSI)` → `6.1` HSI elements (registers/APIs/messages at the
      HW/SW boundary), `6.2` HSI requirements (new content)
 4. **Write Sections 1.1-1.3, 2.3, 3.1-3.2, 4.2, 5.2, 6.2 in full sentences** under their own
-   subheadings — collapsing to `CSR-XXX-1 to CSR-XXX-5` fails review (see requirements-review
+   subheadings — collapsing to `CSG-XXX-1 to CSG-XXX-5` fails review (see requirements-review
    skill). SYSR (2.3) and HSI (6.2) are new categories per this taxonomy, not aliases of an older
    one — ground them in that doc's own Section 2 entities/boundaries and Section 4/5 hardware and
    software blocks respectively.
@@ -58,14 +58,14 @@ structure convention, ID taxonomy, grounded chip facts, and Mermaid rules this p
      a dedicated facts subsection so future docs can reuse them without re-fetching.
    - Update `/memories/repo/overview.md`'s doc count.
 8. **Report back** a short summary: file created, new ID suffix, count of
-   CSR/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI requirements added, and confirmation that Mermaid
+   CSG/FSC/FSR/SYSR/TSC/TSR/SWR/HWR/HSI requirements added, and confirmation that Mermaid
    validation passed with 0 failures.
 
 ## Common mistakes to avoid
 - Skipping the TI-doc fetch step and writing generic textbook security boilerplate instead of a
   TDA4VM/TISCI-grounded claim.
 - Forgetting `4.2`/`5.2`/`6.2` requirement IDs (`HWR-*`/`SWR-*`/`HSI-*`) — every doc has all three,
-  not just CSR/FSC/FSR/SYSR/TSC/TSR.
+  not just CSG/FSC/FSR/SYSR/TSC/TSR.
 - Forgetting the Section 4.1 hardware static architecture `graph LR` diagram — every doc has three
   diagrams total (2.2 trust boundaries, 4.1 hardware static architecture, 5.1 software blocks) plus
   the 5.3 sequence diagram, not just two.

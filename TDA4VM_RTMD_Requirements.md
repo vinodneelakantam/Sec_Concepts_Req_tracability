@@ -8,12 +8,12 @@ nav_title: RTMD
 
 ## 1. Functional Security Concept
 
-### 1.1 Cybersecurity Requirements (CSR)
-- CSR-RTMD-1: Selected code/data/control indicators shall be monitored during runtime.
-- CSR-RTMD-2: Detection events shall trigger graded response actions by severity/confidence.
-- CSR-RTMD-3: Evidence for detections and actions shall be preserved for post-incident analysis.
-- CSR-RTMD-4: Monitoring shall combine periodic checks and event-triggered checks.
-- CSR-RTMD-5: Response actions shall be coordinated with safety management logic.
+### 1.1 Cybersecurity Goals (CSG)
+- CSG-RTMD-1: Selected code/data/control indicators shall be monitored during runtime.
+- CSG-RTMD-2: Detection events shall trigger graded response actions by severity/confidence.
+- CSG-RTMD-3: Evidence for detections and actions shall be preserved for post-incident analysis.
+- CSG-RTMD-4: Monitoring shall combine periodic checks and event-triggered checks.
+- CSG-RTMD-5: Response actions shall be coordinated with safety management logic.
 
 ### 1.2 Functional Security Concept (FSC)
 - FSC-RTMD-1: Combine continuous (periodic) and event-triggered detection so that both slow-drift tampering and sudden anomalies are caught.
@@ -170,10 +170,10 @@ sequenceDiagram
 
 
 ### 5.4 Behavioral requirement focus
-- Monitoring runs on both a scheduled cadence and discrete triggers (reset-reason register, TIFS debug-state change notification, repeated SecurityAccess failures) rather than a single polling loop (CSR-RTMD-4, TSC-RTMD-1)
-- Severity classification is table-driven (region/class -> tier), and any reset-tier response is arbitrated through EcuM/safety-state logic so it cannot fire mid safety-critical actuation cycle (CSR-RTMD-2, CSR-RTMD-5, TSC-RTMD-3)
+- Monitoring runs on both a scheduled cadence and discrete triggers (reset-reason register, TIFS debug-state change notification, repeated SecurityAccess failures) rather than a single polling loop (CSG-RTMD-4, TSC-RTMD-1)
+- Severity classification is table-driven (region/class -> tier), and any reset-tier response is arbitrated through EcuM/safety-state logic so it cannot fire mid safety-critical actuation cycle (CSG-RTMD-2, CSG-RTMD-5, TSC-RTMD-3)
 - Reference digests themselves are protected (stored with their own integrity tag in NvM) so a compromised reference cannot mask a real violation (TSR-RTMD-2)
-- Evidence recorded includes region ID, expected-vs-actual digest, and correlated watchdog/reset/debug-state context to support root-cause diagnosis, not just a pass/fail flag (CSR-RTMD-3, TSR-RTMD-4)
+- Evidence recorded includes region ID, expected-vs-actual digest, and correlated watchdog/reset/debug-state context to support root-cause diagnosis, not just a pass/fail flag (CSG-RTMD-3, TSR-RTMD-4)
 - A reset-tier response re-enters the DMSC BootROM chain, giving the monitor a freshly attested baseline rather than re-arming against a potentially compromised state (TSR-RTMD-3)
 
 ## 6. Hardware-Software Interface (HSI)
